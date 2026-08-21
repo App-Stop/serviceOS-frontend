@@ -1,0 +1,31 @@
+@reference '../index.css';
+
+/* ── App shell ─────────────────────────────────────────── */
+
+.app-shell {
+  @apply flex gap-[30px] items-start min-h-screen w-full p-2.5 bg-neutral-100;
+}
+
+.app-shell__main {
+  @apply flex flex-col flex-1 min-w-0 gap-[30px] pt-2.5;
+}
+
+/* ── Top bar ───────────────────────────────────────────── */
+
+.app-shell__topbar {
+  @apply flex items-center justify-between w-full;
+}
+
+.app-shell__topbar-lead {
+  @apply flex items-center gap-2.5;
+}
+
+.app-shell__topbar-actions {
+  @apply flex items-center gap-5;
+}
+
+/* ── Page content column ───────────────────────────────── */
+
+.app-shell__content {
+  @apply flex flex-col gap-5 items-start w-full;
+}

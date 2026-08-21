@@ -1,0 +1,17 @@
+@reference '../index.css';
+
+.signin-content {
+    @apply flex flex-col items-start gap-7 flex-1
+}
+
+.signin-subheading {
+    @apply text-xl font-semibold text-neutral-900
+}
+
+.signin-heading {
+    @apply text-5xl font-semibold text-neutral-900
+}
+
+.signin-para {
+    @apply text-base text-black-500
+}

@@ -1,0 +1,138 @@
+@reference '../index.css';
+
+/* ── Overlay ───────────────────────────────────────────── */
+
+.search-modal__overlay {
+  @apply fixed inset-0 z-50 flex justify-center px-5 py-[10vh];
+  background: rgb(17 17 17 / 0.45);
+  backdrop-filter: blur(2px);
+}
+
+/* ── Panel ─────────────────────────────────────────────── */
+
+.search-modal {
+  @apply flex flex-col gap-5 items-start w-full max-h-full self-start p-4 rounded-[30px] bg-neutral-50 shadow-modal;
+  max-width: 600px;
+}
+
+/* ── Query row ─────────────────────────────────────────── */
+
+.search-modal__query {
+  @apply flex gap-5 items-start justify-end shrink-0 w-full;
+}
+
+.search-modal__field {
+  @apply flex flex-1 min-w-0 items-center gap-2.5 py-2.5 border-b border-neutral-200;
+}
+
+.search-modal__field-icon {
+  @apply shrink-0 text-neutral-900;
+}
+
+.search-modal__input {
+  @apply flex-1 min-w-0 h-6 bg-transparent text-xl font-normal leading-6 text-neutral-900 text-ellipsis outline-none;
+}
+
+.search-modal__input::placeholder {
+  @apply text-neutral-600;
+}
+
+.search-modal__close {
+  @apply flex items-center justify-center shrink-0 size-10 rounded-full bg-neutral-100 text-neutral-900 transition-colors;
+}
+
+.search-modal__close:hover {
+  @apply bg-neutral-200;
+}
+
+/* ── Results ───────────────────────────────────────────── */
+
+.search-modal__results {
+  @apply flex flex-col gap-5 items-start w-full min-h-0 overflow-y-auto;
+}
+
+.search-modal__group {
+  @apply flex flex-col gap-4 items-start w-full;
+}
+
+.search-modal__group-label {
+  @apply text-xs font-medium leading-5 whitespace-nowrap;
+  color: #848484;
+}
+
+.search-modal__result {
+  @apply flex items-center gap-2.5 w-full h-9 text-left rounded-[10px] transition-colors;
+}
+
+.search-modal__result--active .search-modal__result-title,
+.search-modal__result:hover .search-modal__result-title {
+  @apply underline;
+}
+
+.search-modal__result-icon {
+  @apply flex items-center justify-center shrink-0 size-9 rounded-full;
+}
+
+.search-modal__result-icon--initials {
+  @apply bg-neutral-200 text-xs font-medium leading-[18px] text-black-200;
+}
+
+.search-modal__result-icon--invoice {
+  @apply bg-blue-light text-blue;
+}
+
+.search-modal__result-icon--job {
+  @apply bg-orange-light text-orange;
+}
+
+.search-modal__result-body {
+  @apply flex flex-col flex-1 min-w-0 gap-0.5 items-start justify-center;
+}
+
+.search-modal__result-title {
+  @apply w-full text-sm font-medium text-neutral-900 truncate;
+}
+
+.search-modal__result-meta {
+  @apply w-full text-xs font-normal text-black-200 truncate;
+}
+
+/* ── Empty state ───────────────────────────────────────── */
+
+.search-modal__empty {
+  @apply flex flex-col gap-2.5 items-center justify-center shrink-0 w-full p-4 rounded-[10px];
+}
+
+.search-modal__empty-icon {
+  @apply shrink-0 text-neutral-400;
+}
+
+.search-modal__empty-title {
+  @apply text-sm font-medium text-neutral-900 whitespace-nowrap;
+}
+
+.search-modal__empty-text {
+  @apply text-xs font-normal text-black-200 whitespace-pre;
+}
+
+/* ── Hint footer ───────────────────────────────────────── */
+
+.search-modal__hints {
+  @apply flex gap-2.5 items-start shrink-0;
+}
+
+.search-modal__hint {
+  @apply flex items-center gap-1.5;
+}
+
+.search-modal__keys {
+  @apply flex items-center gap-0.5;
+}
+
+.search-modal__key {
+  @apply flex items-center justify-center shrink-0 size-5 rounded-[4px] bg-neutral-100 border border-neutral-200 text-[8px] text-black-200;
+}
+
+.search-modal__hint-label {
+  @apply text-xs font-normal text-black-200 whitespace-nowrap;
+}

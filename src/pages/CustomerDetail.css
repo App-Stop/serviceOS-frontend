@@ -1,0 +1,59 @@
+@reference '../index.css';
+
+/* ── Header ────────────────────────────────────────────── */
+
+.customer-detail__header {
+  @apply flex items-end justify-between gap-5 w-full;
+}
+
+.customer-detail__identity {
+  @apply flex flex-col gap-2.5 items-start;
+}
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.customer-detail__grid {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+/* Columns stretch so the stacked right-hand cards match the height of the
+   single card on the left. */
+.customer-detail__row {
+  @apply flex gap-5 items-stretch w-full;
+}
+
+.customer-detail__row--stats {
+  @apply items-center;
+}
+
+.customer-detail__column {
+  @apply flex flex-col flex-1 min-w-0 gap-5 items-stretch;
+}
+
+/* Absorbs the leftover height in the right-hand column. */
+.customer-detail__column-filler {
+  @apply flex-1 min-h-0;
+}
+
+/* ── Job history ───────────────────────────────────────── */
+
+.customer-detail__job-title {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.customer-detail__job-assignee {
+  @apply flex items-center gap-1;
+}
+
+/* ── Section heading with a trailing action ────────────── */
+
+.customer-detail__section-title {
+  @apply text-base font-medium;
+  color: var(--color-heading);
+}
+
+/* ── Missing record ────────────────────────────────────── */
+
+.customer-detail__missing {
+  @apply flex flex-col gap-2.5 items-start;
+}

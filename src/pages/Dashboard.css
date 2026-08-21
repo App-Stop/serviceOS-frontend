@@ -1,0 +1,126 @@
+@reference '../index.css';
+
+/* Shared primitives (cards, chips, buttons, stat + activity blocks) live in
+   src/styles/ui.css, loaded by AppShell. */
+
+/* ── Data grid rows ────────────────────────────────────── */
+
+.dashboard__grid {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+.dashboard__row {
+  @apply flex gap-5 items-start w-full;
+}
+
+.dashboard__row--stats {
+  @apply items-center;
+}
+
+.dashboard__aside {
+  @apply flex flex-col gap-5 items-start shrink-0;
+  width: 406px;
+  height: 444px;
+}
+
+/* ── Quick action ──────────────────────────────────────── */
+
+.quick-action {
+  @apply relative flex flex-col gap-5 items-start w-full p-4 rounded-[30px] overflow-hidden bg-primary;
+}
+
+.quick-action__glow {
+  @apply absolute left-1/2 -translate-x-1/2 pointer-events-none;
+  top:24px;
+  width: 468px;
+  height: 173px;
+}
+
+.quick-action__header {
+  @apply relative flex items-center gap-1.5 text-neutral-50;
+}
+
+.quick-action__title {
+  @apply text-base text-neutral-50 whitespace-nowrap;
+}
+
+.quick-action__list {
+  @apply relative flex flex-wrap gap-2.5 items-start content-start w-full;
+}
+
+.quick-action__button {
+  @apply flex items-center justify-center gap-xs px-lg py-md rounded-[100px] border border-transparent-white text-sm leading-5 text-neutral-50 whitespace-nowrap transition-colors;
+  background: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(3px);
+}
+
+.quick-action__button:hover {
+  background: rgb(255 255 255 / 0.18);
+}
+
+/* ── Jobs chart ────────────────────────────────────────── */
+
+.jobs-chart {
+  @apply flex-1 min-h-0 w-full;
+}
+
+.jobs-chart__body {
+  @apply flex flex-1 min-h-0 items-start w-full;
+}
+
+.jobs-chart__axis {
+  @apply flex flex-col items-start justify-between shrink-0 self-stretch pb-[18px] text-[10px] font-semibold text-center text-black-200;
+  width: 36px;
+}
+
+.jobs-chart__axis span {
+  @apply w-full shrink-0;
+}
+
+.jobs-chart__plot {
+  @apply flex flex-col flex-1 min-w-0 gap-2.5 self-stretch;
+}
+
+.jobs-chart__bars {
+  @apply relative flex flex-1 min-h-0 items-end justify-between w-full;
+}
+
+.jobs-chart__lines {
+  @apply absolute inset-0 flex flex-col justify-between pointer-events-none;
+}
+
+.jobs-chart__line {
+  @apply w-full bg-neutral-200;
+  height: 1px;
+}
+
+.jobs-chart__column {
+  @apply relative flex flex-col flex-1 min-w-0 gap-2.5 self-stretch items-center justify-end;
+}
+
+.jobs-chart__bar {
+  @apply shrink-0 rounded-[20px] bg-primary;
+  width: 14px;
+  height: var(--jobs-chart-bar-height, 0%);
+}
+
+.jobs-chart__dot {
+  @apply size-[14px] shrink-0 rounded-[20px] bg-neutral-200;
+}
+
+.jobs-chart__tooltip {
+  @apply flex items-center justify-center shrink-0 px-sm py-xs rounded-[20px] bg-neutral-100 text-[10px] font-medium text-center text-neutral-900 whitespace-nowrap;
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 0.14));
+}
+
+.jobs-chart__dates {
+  @apply flex items-center justify-between w-full text-[10px] font-semibold text-center text-neutral-900;
+}
+
+.jobs-chart__date {
+  @apply flex-1 min-w-0;
+}
+
+.jobs-chart__date--muted {
+  @apply text-neutral-500;
+}

@@ -1,0 +1,42 @@
+@reference '../index.css';
+
+/* Shared dialog shell for the create / edit record modals. */
+
+.form-modal__overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-5;
+  background: rgb(17 17 17 / 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.form-modal {
+  @apply flex flex-col gap-5 w-full max-h-full overflow-y-auto p-[30px] rounded-[30px] bg-neutral-50 shadow-modal-low;
+  max-width: 480px;
+}
+
+.form-modal__header {
+  @apply flex flex-col gap-1;
+}
+
+.form-modal__title {
+  @apply text-2xl font-semibold tracking-tight text-neutral-900;
+}
+
+.form-modal__subtitle {
+  @apply text-sm font-normal text-black-200;
+}
+
+.form-modal__body {
+  @apply flex flex-col gap-4;
+}
+
+.form-modal__row {
+  @apply flex gap-4;
+}
+
+.form-modal__hint {
+  @apply text-xs font-normal text-black-200;
+}
+
+.form-modal__actions {
+  @apply flex items-center gap-2.5;
+}

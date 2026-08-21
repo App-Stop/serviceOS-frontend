@@ -1,0 +1,99 @@
+@reference '../index.css';
+
+/* ── Shell ─────────────────────────────────────────────── */
+
+.sidebar {
+  @apply flex flex-col justify-between shrink-0 self-start sticky top-2.5 overflow-hidden p-2.5 rounded-[30px] bg-neutral-900 h-[calc(100vh-20px)];
+  width: 236px;
+  transition: width 300ms ease;
+}
+
+.sidebar--collapsed {
+  width: 74px;
+}
+
+.sidebar__top {
+  @apply flex flex-col gap-5 w-full;
+}
+
+/* ── Brand ─────────────────────────────────────────────── */
+
+.sidebar__brand {
+  @apply flex items-center justify-between p-2.5 w-full;
+}
+
+.sidebar__brand-mark {
+  @apply text-xl font-semibold whitespace-nowrap bg-clip-text text-transparent;
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-neutral-50),
+    var(--color-neutral-800)
+  );
+}
+
+.sidebar--collapsed .sidebar__brand {
+  @apply justify-center px-0;
+}
+
+/* ── Navigation ────────────────────────────────────────── */
+
+.sidebar__nav {
+  @apply flex flex-col gap-1.5 w-full;
+}
+
+.sidebar__link {
+  @apply flex items-center gap-2.5 w-full px-4 py-2.5 rounded-[10px] text-sm font-normal text-neutral-500 whitespace-nowrap transition-colors;
+}
+
+.sidebar__link:hover {
+  @apply text-neutral-50;
+}
+
+.sidebar__link--active {
+  @apply rounded-[60px] bg-neutral-700 font-medium text-neutral-50;
+}
+
+.sidebar__icon {
+  @apply shrink-0;
+}
+
+.sidebar__label {
+  @apply overflow-hidden;
+}
+
+.sidebar--collapsed .sidebar__link {
+  @apply justify-center px-2.5;
+}
+
+.sidebar--collapsed .sidebar__label,
+.sidebar--collapsed .sidebar__profile-meta {
+  @apply hidden;
+}
+
+/* ── Profile ───────────────────────────────────────────── */
+
+.sidebar__profile {
+  @apply flex items-center gap-2.5 w-full p-2.5 rounded-[30px];
+}
+
+.sidebar__avatar {
+  @apply flex items-center justify-center shrink-0 p-2 rounded-full text-neutral-50;
+  background: var(--color-black-500);
+}
+
+.sidebar__profile-meta {
+  @apply flex flex-col justify-center gap-0.5 whitespace-nowrap;
+}
+
+.sidebar__profile-name {
+  @apply text-sm font-medium text-neutral-50;
+}
+
+.sidebar__profile-role {
+  @apply text-xs font-normal;
+  color: #848484;
+}
+
+.sidebar--collapsed .sidebar__profile {
+  @apply justify-center px-0;
+}

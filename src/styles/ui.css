@@ -1,0 +1,459 @@
+@reference '../index.css';
+
+/*
+ * Shared UI primitives used across the app screens. Page-specific layout
+ * lives in the page's own stylesheet; anything reused by two or more
+ * screens belongs here.
+ */
+
+/* ── Circular icon button ──────────────────────────────── */
+
+.icon-button {
+  @apply flex items-center justify-center shrink-0 size-11 p-[11px] rounded-full bg-neutral-50 border border-neutral-200 text-neutral-900 transition-colors;
+}
+
+.icon-button:hover {
+  @apply bg-neutral-100;
+}
+
+/* ── Pill buttons ──────────────────────────────────────── */
+
+.pill-button {
+  @apply flex items-center justify-center gap-xs px-lg py-md rounded-[100px] bg-neutral-100 text-xs font-medium leading-4 text-neutral-900 transition-colors;
+}
+
+.pill-button:hover {
+  @apply bg-neutral-200;
+}
+
+.pill-button__text {
+  @apply flex items-center justify-center px-xxs;
+}
+
+/* Larger 44px pill, used for filters and toolbar actions. */
+.pill-button--lg {
+  @apply h-11 gap-xs px-lg py-2.5 border border-neutral-200 text-sm font-normal leading-5;
+}
+
+.pill-button--lg.pill-button--selected {
+  @apply bg-primary border-transparent font-medium text-neutral-50;
+}
+
+.pill-button--lg.pill-button--selected:hover {
+  @apply bg-neutral-900;
+}
+
+/* Dark call-to-action pill with the Figma light bloom behind the label. */
+.cta-button {
+  @apply relative flex items-center justify-center shrink-0 gap-sm h-11 px-xl py-2.5 rounded-[100px] overflow-hidden bg-primary border border-transparent-white text-sm font-medium leading-6 text-neutral-50 whitespace-nowrap shadow-btn transition-colors;
+}
+
+.cta-button:hover {
+  @apply bg-neutral-900;
+}
+
+/* Compact 40px variant used inside card headers. */
+.cta-button--sm {
+  @apply h-10 px-lg text-sm;
+}
+
+.cta-button--sm .cta-button__glow {
+  top: 20px;
+}
+
+.cta-button__glow {
+  @apply absolute left-1/2 -translate-x-1/2 pointer-events-none;
+  top: 23px;
+  width: 120px;
+  height: 35px;
+}
+
+.cta-button > :not(.cta-button__glow) {
+  @apply relative;
+}
+
+/* White pill with a leading icon, e.g. "Back to Customers". */
+.ghost-button {
+  @apply flex items-center justify-center shrink-0 gap-sm h-11 px-xl py-2.5 rounded-[100px] bg-neutral-50 border border-neutral-200 text-sm font-medium leading-6 text-neutral-900 whitespace-nowrap transition-colors;
+}
+
+.ghost-button:hover {
+  @apply bg-neutral-100;
+}
+
+/* ── Surface card ──────────────────────────────────────── */
+
+.card {
+  @apply flex flex-col gap-5 items-start p-4 rounded-[30px] bg-neutral-50;
+}
+
+.card--fill {
+  @apply flex-1 min-w-0;
+}
+
+.card__header {
+  @apply flex items-center justify-between w-full;
+}
+
+.card__header--tall {
+  @apply h-8;
+}
+
+.card__title {
+  @apply text-base font-medium text-neutral-900 whitespace-nowrap;
+}
+
+/* ── Status chip ───────────────────────────────────────── */
+
+.chip {
+  @apply flex items-center justify-center gap-xs px-sm py-xs rounded-[20px] text-xs font-medium text-center whitespace-nowrap;
+}
+
+.chip--success {
+  @apply bg-success-light text-success;
+}
+
+.chip--danger {
+  @apply bg-danger-light text-danger;
+}
+
+.chip--info {
+  @apply bg-blue-light text-blue;
+}
+
+.chip--neutral {
+  @apply bg-neutral-100 text-neutral-900;
+}
+
+.chip__avatar {
+  @apply size-4 shrink-0 rounded-full object-cover;
+}
+
+/* ── Page title ────────────────────────────────────────── */
+
+.page-title {
+  @apply flex flex-col gap-2.5 items-start whitespace-nowrap;
+}
+
+.page-title__heading {
+  @apply text-[32px] font-semibold text-neutral-900;
+}
+
+.page-title__subheading {
+  @apply text-sm font-normal text-black-200;
+}
+
+/* ── Initials avatar ───────────────────────────────────── */
+
+.avatar-initials {
+  @apply flex items-center justify-center shrink-0 rounded-full bg-neutral-200 font-medium text-black-200;
+}
+
+.avatar-initials--sm {
+  @apply size-8 text-xs leading-[18px];
+}
+
+.avatar-initials--md {
+  @apply size-9 text-xs leading-[18px];
+}
+
+.avatar-initials--lg {
+  @apply size-10 text-sm leading-[18px];
+}
+
+.avatar-initials--xl {
+  @apply size-[60px] text-2xl;
+}
+
+/* ── Stat card ─────────────────────────────────────────── */
+
+.stat-card__icon {
+  @apply flex items-center justify-center shrink-0 p-2.5 rounded-full bg-neutral-200 text-neutral-900;
+}
+
+.stat-card__photo {
+  @apply size-11 shrink-0 rounded-full object-cover;
+}
+
+.stat-card__body {
+  @apply flex flex-col gap-1 items-start whitespace-nowrap;
+}
+
+.stat-card__value-row {
+  @apply flex items-center gap-2.5;
+}
+
+.stat-card__value-row--tight {
+  @apply gap-1;
+}
+
+.stat-card__value {
+  @apply text-[32px] font-semibold text-neutral-900;
+}
+
+.stat-card__label {
+  @apply text-sm font-normal text-black-200;
+}
+
+.stat-card__trend {
+  @apply flex items-center justify-center gap-1 px-sm py-xs rounded-[20px] bg-success-light text-[10px] font-semibold text-success;
+}
+
+.stat-card__star {
+  @apply shrink-0;
+  color: #e88a07;
+  fill: currentColor;
+}
+
+/* ── Activity feed ─────────────────────────────────────── */
+
+.activity__list {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+.activity__item {
+  @apply flex items-center gap-2.5 w-full;
+}
+
+.activity__avatar {
+  @apply size-10 shrink-0 rounded-full object-cover;
+}
+
+.activity__body {
+  @apply flex flex-col gap-1 items-start justify-center;
+}
+
+.activity__line {
+  @apply flex flex-wrap items-center gap-1.5;
+}
+
+.activity__actor {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.activity__verb {
+  @apply text-sm font-normal text-black-500;
+}
+
+.activity__target {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.activity__time {
+  @apply text-xs font-normal text-black-200;
+}
+
+/* ── Two-line list rows ────────────────────────────────── */
+
+.list-rows {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+.list-row {
+  @apply flex items-center justify-between gap-4 w-full;
+}
+
+.list-row__lead {
+  @apply flex flex-col gap-1.5 items-start justify-center min-w-0;
+}
+
+.list-row__trail {
+  @apply flex flex-col gap-1.5 items-end justify-center shrink-0 text-right whitespace-nowrap;
+}
+
+.list-row__primary {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.list-row__secondary {
+  @apply text-xs font-normal text-black-200;
+}
+
+.list-row__assignee {
+  @apply flex items-center gap-1 rounded-[20px];
+}
+
+.list-row__title-line {
+  @apply flex flex-wrap items-center gap-1.5;
+}
+
+/* ── Definition list (label over value) ────────────────── */
+
+.field-list {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+.field-list__row {
+  @apply flex items-start justify-between w-full;
+}
+
+.field-list__item {
+  @apply flex flex-col flex-1 min-w-0 gap-1.5 items-start justify-center;
+}
+
+.field-list__label {
+  @apply text-xs font-normal text-black-200;
+}
+
+.field-list__value {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.field-list__values {
+  @apply flex flex-col gap-1.5 items-start;
+}
+
+/* ── Job status chip ───────────────────────────────────── */
+
+.status-chip {
+  @apply flex items-center justify-center shrink-0 gap-1.5 px-2 py-1.5 rounded-[20px] text-xs font-medium text-center whitespace-nowrap transition-opacity;
+}
+
+.status-chip:hover {
+  @apply opacity-80;
+}
+
+.status-chip--scheduled {
+  @apply bg-orange-light text-orange;
+}
+
+.status-chip--dispatched {
+  @apply bg-violent-light text-violent;
+}
+
+.status-chip--enroute {
+  @apply bg-yellow-light text-yellow;
+}
+
+.status-chip--onsite {
+  @apply bg-blue-light text-blue;
+}
+
+.status-chip--completed {
+  @apply bg-green-light text-green;
+}
+
+.status-chip--cancelled {
+  @apply bg-red-light text-red;
+}
+
+/* ── Job priority badge ────────────────────────────────── */
+
+.priority-badge {
+  @apply flex items-center justify-center shrink-0 p-1.5 rounded-[20px];
+}
+
+.priority-badge--high {
+  @apply bg-danger-light text-danger;
+}
+
+.priority-badge--normal {
+  @apply bg-neutral-200 text-black-200;
+}
+
+.priority-badge--urgent {
+  @apply bg-error-light text-error;
+}
+
+/* Inline label form used on the job detail heading. */
+.priority-pill {
+  @apply flex items-center gap-1.5 shrink-0 pl-1.5 pr-3 py-1.5 rounded-[20px] text-xs font-medium uppercase tracking-wide whitespace-nowrap;
+}
+
+/* ── Progress bar ──────────────────────────────────────── */
+
+.progress-bar {
+  @apply flex flex-col justify-center w-full overflow-hidden rounded-[20px] bg-neutral-300;
+  height: 6px;
+}
+
+.progress-bar__fill {
+  @apply h-full rounded-[20px] bg-primary;
+  width: var(--progress-value, 0%);
+}
+
+/* ── Lifecycle timeline ────────────────────────────────── */
+
+.timeline {
+  @apply flex w-full;
+}
+
+.timeline--row {
+  @apply items-center;
+}
+
+.timeline--detail {
+  @apply items-start;
+}
+
+.timeline__connector {
+  @apply shrink-0 bg-neutral-200;
+  width: 40px;
+  height: 1px;
+  margin-top: 26px;
+}
+
+.timeline--detail .timeline__connector {
+  margin-top: 80px;
+}
+
+.timeline__group {
+  @apply flex flex-col flex-1 min-w-0 gap-2.5 items-start;
+}
+
+.timeline__step {
+  @apply flex items-center gap-2.5 w-full p-2 rounded-[30px] bg-neutral-50 border border-neutral-200;
+}
+
+/* On the detail screen the step stacks: icon above the label block. */
+.timeline--detail .timeline__step {
+  @apply flex-col items-start gap-5 p-3 rounded-[14px];
+}
+
+.timeline__step--current {
+  @apply border-neutral-900;
+}
+
+.timeline__icon {
+  @apply flex items-center justify-center shrink-0 p-2 rounded-full bg-neutral-200 text-neutral-900;
+}
+
+.timeline__icon--done {
+  @apply bg-danger-light text-danger;
+}
+
+.timeline__body {
+  @apply flex flex-col gap-1 items-start min-w-0;
+}
+
+.timeline__label {
+  @apply text-xs font-medium text-black-200 whitespace-nowrap;
+}
+
+.timeline--detail .timeline__label {
+  @apply text-sm;
+}
+
+.timeline__step--done .timeline__label {
+  color: var(--color-heading);
+}
+
+.timeline__step--current .timeline__label {
+  @apply text-neutral-900;
+}
+
+.timeline__time {
+  @apply text-[10px] font-normal text-black-200 whitespace-nowrap;
+}
+
+.timeline--detail .timeline__time {
+  @apply text-xs;
+}
+
+.timeline__note {
+  @apply max-w-full;
+}
+
+.timeline__note-text {
+  @apply min-w-0 truncate;
+}

@@ -1,0 +1,391 @@
+@reference '../index.css';
+
+/* ── Screen shell ──────────────────────────────────────── */
+
+.onb-screen {
+  @apply relative flex min-h-screen w-full flex-col items-center overflow-hidden bg-primary py-[30px];
+}
+
+.onb-bg {
+  @apply pointer-events-none absolute left-1/2 top-[380px] w-[1648px] max-w-none -translate-x-1/2 select-none;
+}
+
+.onb-logo {
+  @apply relative z-10 flex w-[254px] items-center justify-center p-[10px];
+}
+
+.onb-logo-text {
+  @apply bg-gradient-to-b from-neutral-50 to-neutral-800 bg-clip-text text-[20px] font-semibold text-transparent;
+}
+
+.onb-stage {
+  @apply relative z-10 flex w-full flex-1 items-center justify-center px-[20px] py-[20px];
+}
+
+.onb-card {
+  @apply flex w-full max-w-[548px] flex-col items-center gap-[30px] rounded-[40px] bg-neutral-50 px-[30px] pt-[16px] pb-[30px] shadow-modal-low;
+}
+
+/* ── Progress ──────────────────────────────────────────── */
+
+.onb-progress {
+  @apply flex items-start gap-[10px];
+}
+
+.onb-progress-dot {
+  @apply h-[6px] w-[30px] rounded-[20px] bg-white-200 transition-colors;
+}
+
+.onb-progress-dot-active {
+  @apply bg-primary;
+}
+
+/* ── Header ────────────────────────────────────────────── */
+
+.onb-header {
+  @apply flex w-full flex-col items-center justify-center gap-[10px] text-center;
+}
+
+.onb-title {
+  @apply text-[24px] font-semibold text-heading;
+}
+
+.onb-subtitle {
+  @apply text-[14px] font-normal text-black-200;
+}
+
+/* ── Body layout ───────────────────────────────────────── */
+
+.onb-body {
+  @apply flex w-full flex-col items-start gap-[20px];
+}
+
+.onb-body-center {
+  @apply flex w-full flex-col items-center justify-center gap-[20px];
+}
+
+.onb-row {
+  @apply flex w-full items-start gap-[20px];
+}
+
+/* ── Choice chips (industry, team size, roles) ─────────── */
+
+.onb-chip-group {
+  @apply flex w-full flex-wrap content-center items-center gap-[10px];
+}
+
+.onb-chip {
+  @apply flex h-[44px] shrink-0 cursor-pointer items-center justify-center gap-[var(--spacing-xs)] overflow-clip rounded-[100px] border border-white-200 bg-neutral-50 px-[var(--spacing-lg)] py-[10px] text-[14px] font-normal leading-[20px] text-neutral-900 transition-colors;
+}
+
+.onb-chip-active {
+  @apply border-primary bg-primary font-medium text-neutral-50;
+}
+
+/* ── Selectable option card ────────────────────────────── */
+
+.onb-option {
+  @apply flex w-full cursor-pointer flex-col items-start gap-[20px] rounded-[30px] border border-white-200 bg-neutral-50 p-[16px] text-left transition-colors;
+}
+
+/* 2px border with 15px padding keeps the box the same size as the resting state */
+.onb-option-active {
+  @apply border-2 border-neutral-900 p-[15px];
+}
+
+.onb-option-head {
+  @apply flex w-full items-start justify-between;
+}
+
+.onb-option-icon {
+  @apply flex items-center justify-center rounded-[200px] bg-white-200 p-[10px] text-neutral-900;
+}
+
+.onb-option-check {
+  @apply flex size-[24px] items-center justify-center rounded-[200px] bg-neutral-900 text-neutral-50;
+}
+
+.onb-option-text {
+  @apply flex w-full flex-col items-start gap-[4px];
+}
+
+.onb-option-title {
+  @apply text-[20px] font-medium text-neutral-900;
+}
+
+.onb-option-desc {
+  @apply text-[14px] font-normal text-black-200;
+}
+
+/* ── Muted panels (tip, "you" row) ─────────────────────── */
+
+.onb-panel {
+  @apply flex w-full items-start gap-[10px] rounded-[30px] bg-neutral-100 p-[16px] text-[14px] font-normal text-black-200;
+}
+
+.onb-panel-strong {
+  @apply font-medium text-neutral-900;
+}
+
+/* ── Empty states ──────────────────────────────────────── */
+
+.onb-empty {
+  @apply flex w-full flex-col items-center justify-center gap-[10px] rounded-[10px] p-[16px] text-neutral-400;
+}
+
+.onb-empty-title {
+  @apply text-[14px] font-medium text-neutral-900;
+}
+
+.onb-empty-text {
+  @apply text-[12px] font-normal text-black-200;
+}
+
+/* ── List rows (invited members, crews) ────────────────── */
+
+.onb-list {
+  @apply flex w-full flex-col items-start gap-[10px];
+}
+
+.onb-list-label {
+  @apply text-[14px] font-medium leading-[20px] text-neutral-900;
+}
+
+.onb-list-row {
+  @apply flex w-full items-center justify-center gap-[20px];
+}
+
+.onb-list-row-main {
+  @apply flex min-w-px flex-1 flex-col items-start gap-[4px];
+}
+
+.onb-list-row-title {
+  @apply text-[14px] font-medium text-neutral-900;
+}
+
+.onb-list-row-meta {
+  @apply text-[12px] font-normal text-black-200;
+}
+
+.onb-list-actions {
+  @apply flex shrink-0 items-center gap-[20px];
+}
+
+.onb-divider {
+  @apply h-px w-full bg-white-200;
+}
+
+.onb-icon-btn {
+  @apply flex size-[24px] shrink-0 cursor-pointer items-center justify-center rounded-[200px] text-red;
+}
+
+/* ── Pill buttons ──────────────────────────────────────── */
+
+.onb-btn-sm {
+  @apply relative flex h-[36px] shrink-0 cursor-pointer items-center justify-center gap-[var(--spacing-xs)] overflow-clip rounded-[100px] px-[var(--spacing-lg)] py-[var(--spacing-md)] font-medium leading-[20px];
+}
+
+.onb-btn-sm-dark {
+  @apply border border-transparent-white bg-primary text-[13px] text-neutral-50 shadow-btn;
+}
+
+.onb-btn-sm-muted {
+  @apply bg-neutral-100 text-[14px] text-neutral-900;
+}
+
+.onb-btn-xs {
+  @apply flex shrink-0 cursor-pointer items-center justify-center gap-[var(--spacing-xs)] overflow-clip rounded-[100px] bg-neutral-100 px-[var(--spacing-lg)] py-[var(--spacing-md)] text-[12px] font-medium text-neutral-900;
+}
+
+/* ── Footer navigation ─────────────────────────────────── */
+
+.onb-footer {
+  @apply flex w-full items-start gap-[20px];
+}
+
+.onb-nav-btn {
+  @apply flex h-[44px] shrink-0 cursor-pointer items-center justify-center gap-[var(--spacing-sm)] overflow-clip rounded-[100px] border border-white-200 bg-neutral-50 px-[var(--spacing-xl)] py-[10px] text-[14px] font-medium leading-[24px] text-neutral-900 transition-colors;
+}
+
+.onb-nav-grow {
+  @apply min-w-px flex-1;
+}
+
+.onb-nav-primary {
+  @apply relative flex h-[44px] min-w-px flex-1 cursor-pointer items-center justify-center gap-[var(--spacing-sm)] overflow-clip rounded-[100px] border border-transparent-white bg-primary px-[var(--spacing-xl)] py-[10px] text-[14px] font-medium leading-[24px] text-neutral-50 shadow-btn transition-opacity disabled:cursor-not-allowed disabled:opacity-20;
+}
+
+/* Radial sheen sitting behind the label of a dark pill button */
+.onb-glow {
+  @apply pointer-events-none absolute left-1/2 top-[23px] h-[35px] w-[120px] -translate-x-1/2 rounded-[100%] bg-neutral-50/40 blur-[12px];
+}
+
+.onb-glow-sm {
+  @apply pointer-events-none absolute left-1/2 top-[17px] h-[33px] w-[116px] -translate-x-1/2 rounded-[100%] bg-neutral-50/40 blur-[12px];
+}
+
+/* ── Services step ─────────────────────────────────────── */
+
+.onb-service-row {
+  @apply flex w-full items-end gap-[10px];
+}
+
+.onb-service-time {
+  @apply w-[160px] shrink-0;
+}
+
+.onb-select {
+  @apply flex w-full cursor-pointer appearance-none items-center rounded-[30px] border border-white-200 bg-neutral-50 px-3.5 py-2.5 text-[14px] leading-[24px] text-neutral-900 transition-colors focus:border-neutral-900 focus:outline-none;
+}
+
+.onb-select-wrap {
+  @apply relative w-full;
+}
+
+.onb-select-chevron {
+  @apply pointer-events-none absolute right-3.5 top-1/2 size-[16px] -translate-y-1/2 text-neutral-900;
+}
+
+.onb-remove-btn {
+  @apply flex size-[44px] shrink-0 cursor-pointer items-center justify-center rounded-[100px] border border-white-200 bg-neutral-50 text-neutral-900 transition-colors;
+}
+
+/* ── Review summary tiles ──────────────────────────────── */
+
+.onb-summary {
+  @apply flex w-full flex-col items-start gap-[10px];
+}
+
+.onb-summary-row {
+  @apply flex w-full items-center gap-[10px];
+}
+
+.onb-summary-tile {
+  @apply flex h-[78px] min-w-px flex-1 flex-col items-start gap-[6px] rounded-[30px] bg-neutral-100 p-[16px];
+}
+
+.onb-summary-tile-half {
+  @apply w-[239px] flex-none;
+}
+
+.onb-summary-label {
+  @apply text-[14px] font-normal text-black-200;
+}
+
+.onb-summary-value {
+  @apply text-[16px] font-semibold text-neutral-900;
+}
+
+/* ── Crew card ─────────────────────────────────────────── */
+
+.onb-crew-card {
+  @apply relative flex w-full items-center justify-center gap-[20px] overflow-clip rounded-[30px] border border-white-200 bg-neutral-50 p-[16px];
+}
+
+.onb-crew-accent {
+  @apply absolute left-0 top-0 h-full w-[4px];
+}
+
+.onb-crew-name {
+  @apply text-[16px] font-medium text-neutral-900;
+}
+
+.onb-crew-meta {
+  @apply text-[14px] font-normal text-black-200;
+}
+
+/* ── Modal (Add / Edit member) ─────────────────────────── */
+
+.onb-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-primary/60 p-[20px] backdrop-blur-[2px];
+}
+
+.onb-modal {
+  @apply flex w-full max-w-[368px] flex-col items-end justify-center gap-[20px] rounded-[30px] bg-neutral-50 p-[16px] shadow-modal;
+}
+
+.onb-modal-header {
+  @apply flex h-[32px] w-full items-center;
+}
+
+.onb-modal-title {
+  @apply text-[16px] font-semibold text-neutral-900;
+}
+
+.onb-modal-body {
+  @apply flex w-full flex-col items-start gap-[20px];
+}
+
+.onb-modal-row {
+  @apply flex w-full items-start gap-[10px];
+}
+
+.onb-modal-footer {
+  @apply flex shrink-0 items-start gap-[20px];
+}
+
+/* Input carrying a leading adornment such as the hourly-rate dollar sign */
+.onb-input-affix {
+  @apply relative w-full;
+}
+
+.onb-input-affix-icon {
+  @apply pointer-events-none absolute left-3.5 top-1/2 size-[16px] -translate-y-1/2 text-neutral-900;
+}
+
+.onb-input-affix input {
+  @apply pl-[38px];
+}
+
+/* Auto-width variants of the wizard footer buttons */
+.onb-nav-btn-auto {
+  @apply flex-none;
+}
+
+.onb-nav-primary-auto {
+  @apply flex-none;
+}
+
+/* ── Token (multi-select) input ────────────────────────── */
+
+.onb-token-field {
+  @apply flex w-full flex-wrap items-center gap-[var(--spacing-md)] rounded-[30px] border border-white-200 bg-neutral-50 px-3.5 py-2.5 transition-colors focus-within:border-neutral-900;
+}
+
+.onb-token {
+  @apply flex shrink-0 items-center justify-center gap-[var(--spacing-xs)] overflow-clip rounded-[100px] bg-neutral-100 px-[8px] py-[6px] text-[12px] font-medium leading-[16px] text-neutral-900;
+}
+
+.onb-token-remove {
+  @apply flex size-[16px] cursor-pointer items-center justify-center text-neutral-900;
+}
+
+.onb-token-input {
+  @apply min-w-[80px] flex-1 bg-transparent text-[14px] leading-[24px] text-neutral-900 placeholder:text-neutral-800 focus:outline-none;
+}
+
+.onb-token-suggestions {
+  @apply flex w-full flex-wrap items-center gap-[var(--spacing-sm)];
+}
+
+.onb-token-suggestion {
+  @apply cursor-pointer rounded-[100px] border border-white-200 bg-neutral-50 px-[8px] py-[6px] text-[12px] font-medium leading-[16px] text-neutral-900 transition-colors hover:bg-neutral-100;
+}
+
+/* ── Crew colour swatches ──────────────────────────────── */
+
+.onb-swatch-group {
+  @apply flex shrink-0 items-start gap-[10px];
+}
+
+.onb-swatch {
+  @apply size-[20px] shrink-0 cursor-pointer rounded-[40px] border-2 border-transparent shadow-btn transition-colors;
+}
+
+.onb-swatch-active {
+  @apply border-neutral-900;
+}
+
+.onb-field-block {
+  @apply flex flex-col items-start gap-[10px];
+}

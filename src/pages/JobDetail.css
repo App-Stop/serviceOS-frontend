@@ -1,0 +1,74 @@
+@reference '../index.css';
+
+/* ── Header ────────────────────────────────────────────── */
+
+.job-detail__header {
+  @apply flex items-end justify-between gap-5 w-full;
+}
+
+.job-detail__identity {
+  @apply flex flex-col gap-2.5 items-start;
+}
+
+.job-detail__meta {
+  @apply flex flex-wrap items-center gap-5;
+}
+
+.job-detail__customer {
+  @apply flex items-center gap-2.5 text-sm font-medium text-neutral-900;
+}
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.job-detail__grid {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+.job-detail__row {
+  @apply flex gap-5 items-stretch w-full;
+}
+
+.job-detail__row--stats {
+  @apply items-center;
+}
+
+/* ── Progress card ─────────────────────────────────────── */
+
+.job-detail__progress-head {
+  @apply flex items-center gap-5;
+}
+
+.job-detail__progress-meter {
+  @apply flex items-center gap-2.5 px-lg py-2 rounded-[100px] bg-neutral-100;
+  width: 201px;
+}
+
+.job-detail__progress-value {
+  @apply shrink-0 text-xs font-medium text-neutral-900;
+}
+
+/* ── Job information ───────────────────────────────────── */
+
+.job-detail__person {
+  @apply flex items-center gap-1.5 text-sm font-medium text-neutral-900;
+}
+
+.job-detail__person-avatar {
+  @apply size-5 shrink-0 rounded-full object-cover;
+}
+
+/* ── Activity photos ───────────────────────────────────── */
+
+.job-detail__photos {
+  @apply flex items-center gap-1.5 mt-1.5;
+}
+
+.job-detail__photo {
+  @apply size-11 shrink-0 rounded-lg object-cover;
+}
+
+/* ── Missing record ────────────────────────────────────── */
+
+.job-detail__missing {
+  @apply flex flex-col gap-2.5 items-start;
+}

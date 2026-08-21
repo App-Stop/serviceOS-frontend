@@ -1,0 +1,112 @@
+@reference '../index.css';
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.customers__body {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+/* ── Toolbar ───────────────────────────────────────────── */
+
+.customers__toolbar {
+  @apply flex items-center justify-between gap-5 w-full;
+}
+
+.customers__toolbar-lead {
+  @apply flex items-center gap-5;
+}
+
+.customers__search {
+  @apply flex items-center gap-md shrink-0 w-[260px] px-[14px] py-2.5 rounded-[30px] bg-neutral-50 border border-neutral-200;
+}
+
+.customers__search-icon {
+  @apply shrink-0 text-black-200;
+}
+
+.customers__search-input {
+  @apply flex-1 min-w-0 bg-transparent text-sm font-normal leading-6 text-neutral-900 outline-none;
+}
+
+.customers__search-input::placeholder {
+  @apply text-black-200;
+}
+
+.customers__filters {
+  @apply flex items-center gap-2.5;
+}
+
+/* ── Table ─────────────────────────────────────────────── */
+
+.customers__table-wrap {
+  @apply w-full overflow-auto rounded-[30px] bg-neutral-50;
+  max-height: 764px;
+}
+
+.customers__table {
+  @apply w-full border-collapse;
+  table-layout: fixed;
+  min-width: 980px;
+}
+
+.customers__table th {
+  @apply sticky top-0 z-10 h-12 px-4 text-left align-middle bg-neutral-50 border-b border-neutral-200 text-sm font-medium text-black-200 whitespace-nowrap;
+}
+
+.customers__table td {
+  @apply h-[72px] px-4 align-middle border-b border-neutral-200 text-sm font-medium text-neutral-900;
+}
+
+.customers__row {
+  @apply cursor-pointer transition-colors;
+}
+
+.customers__row:hover td {
+  @apply bg-neutral-100;
+}
+
+.customers__cell-name {
+  @apply flex items-center gap-1.5 min-w-0;
+}
+
+.customers__name {
+  @apply min-w-0 truncate leading-6;
+}
+
+.customers__cell-truncate {
+  @apply block min-w-0 truncate;
+}
+
+.customers__empty {
+  @apply h-[72px] px-4 text-center text-sm font-normal text-black-200;
+}
+
+/* Column widths — mirrors the Figma column set. */
+.customers__col--id {
+  width: 80px;
+}
+
+.customers__col--name {
+  width: 220px;
+}
+
+.customers__col--phone {
+  width: 160px;
+}
+
+.customers__col--email {
+  width: auto;
+}
+
+.customers__col--locations {
+  width: 120px;
+}
+
+.customers__col--jobs {
+  width: 110px;
+}
+
+.customers__col--billed {
+  width: 130px;
+}
+

@@ -1,0 +1,41 @@
+@reference '../index.css';
+
+/* ── Status / priority dropdowns ───────────────────────── */
+
+.status-menu {
+  @apply relative inline-flex;
+}
+
+.status-menu--priority {
+  @apply shrink-0;
+}
+
+.status-menu__trigger {
+  @apply flex items-center shrink-0;
+}
+
+.status-menu__list {
+  @apply absolute left-0 top-full z-20 flex flex-col gap-0.5 mt-1.5 p-1.5 rounded-2xl bg-neutral-50 border border-neutral-200 shadow-modal-low;
+  min-width: 168px;
+}
+
+.status-menu__list--right {
+  @apply left-auto right-0;
+}
+
+.status-menu__option {
+  @apply flex items-center gap-2 w-full px-2 py-1.5 rounded-xl text-left text-xs font-medium text-neutral-900 whitespace-nowrap transition-colors;
+}
+
+.status-menu__option:hover {
+  @apply bg-neutral-100;
+}
+
+.status-menu__option[aria-selected='true'] {
+  @apply bg-neutral-100;
+}
+
+.status-menu__swatch {
+  @apply size-2.5 shrink-0 rounded-full;
+  background: currentColor;
+}
