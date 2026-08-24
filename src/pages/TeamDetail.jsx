@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
 import { AddMemberModal } from '../components/addMemberModal';
+import { AssignJobModal } from '../components/AssignJobModal';
 import { useTeamMember, useCrews, updateTeamMember } from '../data/team';
 import { initials } from '../data/customers';
 import glow from '../assets/button-glow.svg';
@@ -92,6 +93,7 @@ const TeamDetail = () => {
   const crews = useCrews();
 
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
 
   if (!member) {
     return (
@@ -125,6 +127,25 @@ const TeamDetail = () => {
     setEditModalOpen(false);
   };
 
+  const handleAssignJob = ({ job }) => {
+    if (!job) return;
+    const newEntry = {
+      id: `jh-${Date.now()}`,
+      title: job.title,
+      status: job.status || 'scheduled',
+      statusVariant: 'danger',
+      assignee: member.name,
+      date: job.date || 'Today',
+      time: job.time || '9:00 AM',
+    };
+    const updatedHistory = [newEntry, ...jobHistory];
+    const activeJobsCount = (member.activeJobs || 2) + 1;
+    updateTeamMember(member.id, {
+      jobHistory: updatedHistory,
+      activeJobs: activeJobsCount,
+    });
+  };
+
   return (
     <AppShell topbarLead={<BackButton />}>
       <div className="app-shell__content team-detail__content">
@@ -140,7 +161,7 @@ const TeamDetail = () => {
           <button
             type="button"
             className="cta-button"
-            onClick={() => navigate('/jobs')}
+            onClick={() => setAssignModalOpen(true)}
           >
             <img className="cta-button__glow" src={glow} alt="" aria-hidden="true" />
             <Plus size={20} strokeWidth={2} />
@@ -329,6 +350,14 @@ const TeamDetail = () => {
           crews={crews}
           onSave={handleSaveMember}
           onClose={() => setEditModalOpen(false)}
+        />
+      )}
+
+      {assignModalOpen && (
+        <AssignJobModal
+          member={member}
+          onAssign={handleAssignJob}
+          onClose={() => setAssignModalOpen(false)}
         />
       )}
     </AppShell>

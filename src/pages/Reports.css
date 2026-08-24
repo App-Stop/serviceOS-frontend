@@ -1,0 +1,334 @@
+@reference '../index.css';
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.reports__content {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+.reports__header {
+  @apply flex items-end justify-between gap-5 w-full;
+}
+
+.reports__actions {
+  @apply flex items-center gap-2.5 flex-wrap;
+}
+
+.reports__range {
+  @apply flex items-center gap-1.5;
+}
+
+.reports__range-option {
+  @apply flex items-center justify-center px-4 py-2.5 rounded-full bg-white border border-neutral-200 text-sm font-medium text-neutral-900 whitespace-nowrap transition-colors;
+}
+
+.reports__range-option:hover {
+  @apply bg-neutral-100;
+}
+
+.reports__range-option--selected,
+.reports__range-option--selected:hover {
+  @apply bg-primary border-primary text-white;
+}
+
+/* ── Metrics Grid ──────────────────────────────────────── */
+
+.reports__metrics {
+  @apply grid gap-5 w-full;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.reports__metric-card {
+  @apply flex flex-col gap-5 p-4 rounded-[30px] bg-white w-full;
+}
+
+.reports__metric-icon {
+  @apply flex items-center justify-center size-11 rounded-full bg-neutral-100 text-neutral-900 shrink-0;
+}
+
+.reports__metric-body {
+  @apply flex flex-col gap-1 items-start whitespace-nowrap;
+}
+
+.reports__metric-value-row {
+  @apply flex items-center gap-2.5;
+}
+
+.reports__metric-value {
+  @apply text-[32px] font-semibold text-neutral-900 leading-tight;
+}
+
+.reports__metric-label {
+  @apply text-sm font-normal text-black-200;
+}
+
+/* ── Card Primitives ───────────────────────────────────── */
+
+.reports__card {
+  @apply flex flex-col gap-5 p-4 rounded-[30px] bg-white w-full;
+}
+
+.reports__card-header {
+  @apply flex items-center justify-between w-full gap-4;
+}
+
+.reports__card-title {
+  @apply text-base font-medium text-neutral-900 whitespace-nowrap;
+}
+
+.reports__card-icon {
+  @apply flex items-center justify-center size-8 rounded-full bg-neutral-200 text-neutral-900 shrink-0;
+}
+
+.reports__grid-2 {
+  @apply grid gap-5 w-full items-start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ── Revenue & Jobs chart ──────────────────────────────── */
+
+.reports__chart-tools {
+  @apply flex items-center gap-5;
+}
+
+.reports__legend {
+  @apply flex items-center gap-5;
+}
+
+.reports__legend-item {
+  @apply flex items-center gap-1 text-xs font-medium text-neutral-900 leading-[18px] whitespace-nowrap;
+}
+
+.reports__legend-dot {
+  @apply size-3 rounded-full bg-primary shrink-0;
+}
+
+.reports__legend-line {
+  @apply w-3.5 h-1 rounded-full bg-green shrink-0;
+}
+
+.reports__chart {
+  @apply flex flex-col gap-2.5 w-full;
+}
+
+.reports__chart-plot {
+  @apply relative w-full;
+}
+
+.reports__chart-gridline {
+  @apply absolute left-0 right-0 h-px bg-neutral-200 pointer-events-none;
+}
+
+.reports__chart-bars {
+  @apply absolute inset-0 flex items-end;
+}
+
+.reports__chart-column {
+  @apply flex-1 min-w-0 h-full flex flex-col items-center justify-end cursor-pointer bg-transparent border-0 p-0;
+}
+
+/* 14px in the 14 day view; narrower ranges down as the columns tighten so
+   the longer ranges stay readable. */
+.reports__chart-bar {
+  @apply w-3.5 rounded-full bg-primary shrink-0 transition-opacity;
+  max-width: 80%;
+}
+
+.reports__chart-column:hover .reports__chart-bar {
+  @apply opacity-80;
+}
+
+.reports__chart-bar--upcoming {
+  @apply bg-neutral-200;
+}
+
+.reports__chart-line {
+  @apply absolute inset-0 w-full h-full pointer-events-none overflow-visible;
+}
+
+.reports__chart-node {
+  @apply absolute size-2 rounded-full outline-4 outline-white bg-green pointer-events-none;
+  transform: translate(-50%, -50%);
+}
+
+.reports__chart-node--upcoming {
+  @apply bg-neutral-200;
+}
+
+.reports__chart-tooltip {
+  @apply absolute z-10 flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-[20px] bg-white border border-neutral-100 shadow-modal-low pointer-events-none whitespace-nowrap;
+  transform: translate(-50%, -100%);
+}
+
+.reports__chart-tooltip-value {
+  @apply text-xs font-bold text-green leading-4;
+}
+
+.reports__chart-tooltip-label {
+  @apply text-xs font-medium text-neutral-900 leading-4;
+}
+
+.reports__chart-axis {
+  @apply flex items-center w-full;
+}
+
+.reports__chart-axis-label {
+  @apply flex-1 min-w-0 text-center text-[10px] font-semibold text-neutral-900;
+}
+
+.reports__chart-axis-label--upcoming {
+  @apply text-neutral-500;
+}
+
+/* ── Top earning lists ─────────────────────────────────── */
+
+.reports__list {
+  @apply flex flex-col gap-5 w-full;
+}
+
+.reports__list-row {
+  @apply flex items-center justify-between gap-4 w-full;
+}
+
+.reports__list-main {
+  @apply flex flex-col gap-1.5 items-start justify-center min-w-0;
+}
+
+.reports__list-side {
+  @apply flex flex-col gap-1.5 items-end justify-center text-right whitespace-nowrap shrink-0;
+}
+
+.reports__list-title {
+  @apply text-sm font-medium text-neutral-900 truncate max-w-full;
+}
+
+.reports__list-amount {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.reports__list-meta {
+  @apply flex items-center gap-1 text-xs font-normal text-black-200 whitespace-nowrap;
+}
+
+.reports__list-avatar {
+  @apply size-4 text-[8px] leading-none;
+}
+
+/* ── Invoice pipeline ──────────────────────────────────── */
+
+.reports__pipeline {
+  @apply grid gap-5 w-full;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.reports__pipeline-tile {
+  @apply flex flex-col gap-2.5 items-start p-3.5 rounded-[20px] bg-white border border-neutral-200 min-w-0;
+}
+
+.reports__pipeline-figures {
+  @apply flex flex-col gap-1 items-start;
+}
+
+.reports__pipeline-count {
+  @apply text-xl font-semibold text-heading;
+}
+
+.reports__pipeline-amount {
+  @apply text-sm font-normal text-black-200;
+}
+
+/* ── Recent invoices table ─────────────────────────────── */
+
+.reports__table-wrap {
+  @apply w-full overflow-auto;
+}
+
+.reports__table {
+  @apply w-full border-collapse;
+  table-layout: fixed;
+  min-width: 860px;
+}
+
+.reports__table th {
+  @apply h-12 px-3.5 text-left align-middle border-b border-neutral-200 text-sm font-medium text-black-200 whitespace-nowrap;
+}
+
+.reports__table td {
+  @apply h-[72px] px-3.5 align-middle border-b border-neutral-200 text-sm font-medium text-neutral-900;
+}
+
+.reports__cell--center {
+  @apply text-center;
+}
+
+.reports__col--number {
+  width: 100px;
+}
+
+.reports__col--customer {
+  width: 24%;
+}
+
+.reports__col--stamp {
+  width: 18%;
+}
+
+.reports__col--status {
+  width: 14%;
+}
+
+.reports__col--amount {
+  width: 16%;
+}
+
+.reports__person {
+  @apply flex items-center gap-2.5 min-w-0;
+}
+
+.reports__stamp {
+  @apply flex flex-col gap-0.5 whitespace-nowrap;
+}
+
+.reports__stamp-time {
+  @apply text-sm font-normal text-neutral-900;
+}
+
+.reports__table td .invoice-chip {
+  @apply inline-flex w-fit;
+}
+
+/* ── Responsive Overrides ──────────────────────────────── */
+
+@media (max-width: 1279px) {
+  .reports__chart-tools {
+    @apply flex-wrap justify-end gap-2.5;
+  }
+}
+
+@media (max-width: 1023px) {
+  .reports__metrics,
+  .reports__pipeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reports__grid-2 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .reports__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .reports__metrics,
+  .reports__pipeline {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .reports__card-header {
+    @apply flex-wrap;
+  }
+}

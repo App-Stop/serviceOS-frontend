@@ -1,0 +1,570 @@
+@reference '../index.css';
+
+/*
+ * Profile & Settings screen.
+ *
+ * The `settings-*` blocks are the reusable primitives the panels compose
+ * from; `profile__*` is just the two-column page frame.
+ */
+
+/* ── Page frame ────────────────────────────────────────── */
+
+/* Scoped to the shell class so it reliably wins over `.app-shell__content`. */
+.app-shell__content.profile {
+  @apply flex-row justify-center gap-10 items-start;
+}
+
+.profile__panel {
+  @apply flex flex-col flex-1 min-w-0 gap-5 items-start;
+  max-width: 640px;
+}
+
+/* ── Settings nav ──────────────────────────────────────── */
+
+.settings-nav {
+  @apply flex flex-col shrink-0 gap-1;
+  width: 180px;
+}
+
+.settings-nav__link {
+  @apply flex items-center justify-between gap-2.5 w-full p-2.5 rounded-[30px] text-left text-black-200 transition-colors;
+}
+
+.settings-nav__link:hover {
+  @apply bg-neutral-100 text-neutral-900;
+}
+
+.settings-nav__link--active {
+  @apply bg-neutral-200 text-neutral-900;
+}
+
+.settings-nav__lead {
+  @apply flex items-center gap-2.5 min-w-0;
+}
+
+.settings-nav__label {
+  @apply text-[13px] font-medium truncate;
+}
+
+.settings-nav__badge {
+  @apply flex items-center justify-center shrink-0 size-4 rounded-[20px] bg-neutral-300 text-[10px] font-medium text-black-500;
+}
+
+/* ── Panel header ──────────────────────────────────────── */
+
+.settings-header {
+  @apply flex flex-wrap items-center justify-between gap-4 w-full;
+}
+
+/* Overrides `.page-title`'s nowrap so long subtitles wrap on narrow screens. */
+.settings-header__title {
+  @apply gap-1 min-w-0 whitespace-normal;
+}
+
+.settings-header__heading {
+  @apply text-2xl font-semibold text-neutral-900;
+}
+
+.settings-actions {
+  @apply flex items-center gap-2.5 shrink-0;
+}
+
+/* Inside a card the pair spans the row and pins right; in the panel header
+   it sits beside the title instead. */
+.settings-card > .settings-actions {
+  @apply w-full justify-end;
+}
+
+.settings-actions__reset {
+  @apply h-10 px-3.5;
+}
+
+.settings-actions button:disabled {
+  @apply opacity-40 cursor-not-allowed;
+}
+
+.settings-actions .cta-button:disabled:hover {
+  @apply bg-primary;
+}
+
+/* ── Settings card ─────────────────────────────────────── */
+
+.settings-card {
+  @apply flex flex-col items-start gap-[30px] w-full p-6 rounded-[30px] bg-neutral-50;
+}
+
+.settings-card__header {
+  @apply flex flex-col gap-1 items-start w-full;
+}
+
+.settings-card__title {
+  @apply text-base font-medium text-neutral-900;
+}
+
+.settings-card__description {
+  @apply text-xs font-normal text-black-200;
+}
+
+/* Copy on the left, a single action pinned right. */
+.settings-card--split {
+  @apply flex-row items-center;
+}
+
+.settings-card--split .settings-card__header {
+  @apply flex-1 min-w-0;
+}
+
+.settings-card--danger {
+  @apply bg-error-light border border-error;
+}
+
+.settings-card--empty {
+  @apply items-center gap-2.5 text-center py-12;
+}
+
+.settings-empty__icon {
+  @apply flex items-center justify-center size-11 rounded-full bg-neutral-200 text-neutral-900;
+}
+
+.settings-empty__title {
+  @apply text-base font-medium text-neutral-900;
+}
+
+.settings-empty__description {
+  @apply text-xs font-normal text-black-200;
+  max-width: 380px;
+}
+
+/* Label above a non-input control (pickers, uploads). */
+.settings-group {
+  @apply flex flex-col gap-2.5 items-start w-full;
+}
+
+/* ── Fields ────────────────────────────────────────────── */
+
+.settings-field {
+  @apply flex flex-col flex-1 min-w-0 gap-1.5 items-start w-full;
+}
+
+.settings-field__label {
+  @apply text-sm font-medium leading-5 text-neutral-900;
+}
+
+.settings-field__control {
+  @apply w-full h-11 px-3.5 py-2.5 rounded-[30px] bg-neutral-50 border border-neutral-200 text-sm leading-6 text-neutral-900 transition-colors;
+  @apply placeholder:text-neutral-800 focus:outline-none focus:border-neutral-900;
+}
+
+.settings-field__select-wrap {
+  @apply relative w-full;
+}
+
+.settings-field__control--select {
+  @apply appearance-none pr-11 cursor-pointer;
+}
+
+.settings-field__chevron {
+  @apply absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-900 pointer-events-none;
+}
+
+.settings-field__control--textarea {
+  @apply h-auto resize-none rounded-[20px];
+  min-height: 100px;
+}
+
+.settings-field__hint {
+  @apply text-xs font-normal text-black-200;
+}
+
+.settings-field-row {
+  @apply flex gap-5 items-start w-full;
+}
+
+/* Half-width field on an otherwise full-width row. */
+.settings-field-row--half > .settings-field {
+  @apply flex-none;
+  width: calc(50% - 10px);
+}
+
+/* ── Label / description row with a trailing control ───── */
+
+.settings-row {
+  @apply flex flex-wrap items-center justify-between gap-4 w-full;
+}
+
+.settings-row__body {
+  @apply flex flex-col gap-1.5 items-start justify-center min-w-0;
+}
+
+.settings-row__title {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.settings-row__title--danger {
+  @apply text-error;
+}
+
+.settings-row__description {
+  @apply text-xs font-normal text-black-200;
+}
+
+/* ── Toggle ────────────────────────────────────────────── */
+
+.toggle-switch {
+  @apply flex shrink-0 items-center p-1 rounded-[100px] bg-neutral-50 border border-neutral-200 transition-colors;
+  width: 44px;
+  height: 26px;
+}
+
+.toggle-switch--on {
+  @apply bg-primary border-transparent-white;
+}
+
+.toggle-switch__knob {
+  @apply block size-[18px] rounded-full bg-primary transition-transform;
+}
+
+.toggle-switch--on .toggle-switch__knob {
+  @apply bg-neutral-50;
+  transform: translateX(18px);
+}
+
+/* ── Destructive button ────────────────────────────────── */
+
+.danger-button {
+  @apply flex items-center justify-center shrink-0 gap-1.5 h-11 px-4 py-2.5 rounded-[100px] bg-error text-sm font-semibold leading-6 text-neutral-50 whitespace-nowrap transition-opacity;
+}
+
+.danger-button:hover {
+  @apply opacity-90;
+}
+
+/* ── Image upload ──────────────────────────────────────── */
+
+.image-upload {
+  @apply flex flex-wrap items-center gap-2.5 w-full;
+}
+
+.image-upload__preview {
+  @apply flex items-center justify-center shrink-0 size-20 overflow-hidden rounded-full bg-neutral-100 border border-dashed border-neutral-400 text-neutral-600;
+}
+
+.image-upload__preview--filled {
+  @apply border-solid border-neutral-200 bg-neutral-50;
+}
+
+.image-upload__image {
+  @apply size-full object-cover;
+}
+
+.image-upload__button {
+  @apply h-9 shrink-0 text-sm leading-5;
+}
+
+.image-upload__clear {
+  @apply flex items-center justify-center shrink-0 size-9 rounded-full bg-neutral-100 text-black-200 transition-colors;
+}
+
+.image-upload__clear:hover {
+  @apply bg-neutral-200 text-error;
+}
+
+.image-upload__hint {
+  @apply text-xs font-normal text-black-200;
+  max-width: 180px;
+}
+
+/* ── Drop zone ─────────────────────────────────────────── */
+
+.drop-zone {
+  @apply relative flex flex-col items-center justify-center gap-2.5 w-full rounded-[20px] bg-neutral-50 border border-dashed border-neutral-400 text-neutral-600 cursor-pointer overflow-hidden transition-colors;
+  height: 152px;
+}
+
+.drop-zone:hover,
+.drop-zone--active {
+  @apply bg-neutral-100 border-neutral-900;
+}
+
+.drop-zone--filled {
+  @apply p-0 border-solid border-neutral-200;
+}
+
+.drop-zone__image {
+  @apply size-full object-cover;
+}
+
+.drop-zone__title {
+  @apply text-xs font-medium text-neutral-900;
+}
+
+.drop-zone__hint {
+  @apply text-xs font-normal text-black-200;
+}
+
+.drop-zone__clear {
+  @apply absolute right-2.5 top-2.5 flex items-center justify-center size-8 rounded-full bg-neutral-50 border border-neutral-200 text-black-200 transition-colors;
+}
+
+.drop-zone__clear:hover {
+  @apply text-error;
+}
+
+/* ── Invoice layout picker ─────────────────────────────── */
+
+.layout-picker {
+  @apply grid gap-2.5 w-full;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.layout-picker__option {
+  @apply flex flex-col items-stretch overflow-hidden rounded-[14px] bg-neutral-50 border border-neutral-200 text-left transition-colors;
+}
+
+.layout-picker__option:hover {
+  @apply border-neutral-400;
+}
+
+.layout-picker__option--selected {
+  @apply border-neutral-900;
+  box-shadow: inset 0 0 0 1px var(--color-neutral-900);
+}
+
+.layout-picker__thumb {
+  @apply flex items-start justify-center p-2.5 bg-neutral-100 overflow-hidden;
+  height: 100px;
+}
+
+.layout-picker__body {
+  @apply flex flex-col gap-1 items-start p-2.5;
+}
+
+.layout-picker__name {
+  @apply text-sm font-medium text-neutral-900;
+}
+
+.layout-picker__description {
+  @apply text-xs font-normal text-black-200;
+}
+
+/* Miniature invoice wireframe drawn from blocks. */
+.layout-preview {
+  @apply flex flex-col gap-1.5 w-full p-2 rounded-md bg-neutral-50;
+}
+
+.layout-preview__head {
+  @apply flex items-center gap-1.5;
+}
+
+.layout-preview__mark {
+  @apply block size-3 shrink-0 rounded-full bg-neutral-400;
+}
+
+.layout-preview__title {
+  @apply block h-1.5 flex-1 rounded-full bg-neutral-300;
+}
+
+.layout-preview__meta {
+  @apply flex flex-col gap-1;
+}
+
+.layout-preview__meta span {
+  @apply block h-1 rounded-full bg-neutral-300;
+  width: 60%;
+}
+
+.layout-preview__rule {
+  @apply h-px w-full bg-neutral-300;
+}
+
+.layout-preview__lines {
+  @apply flex flex-col gap-1;
+}
+
+.layout-preview__lines span {
+  @apply block h-1 w-full rounded-full bg-neutral-300;
+}
+
+.layout-preview__total {
+  @apply flex justify-end;
+}
+
+.layout-preview__total span {
+  @apply block h-1 rounded-full bg-neutral-400;
+  width: 35%;
+}
+
+/* Bold header: the title block becomes a filled banner. */
+.layout-preview--bold .layout-preview__head {
+  @apply -mx-2 -mt-2 mb-0.5 px-2 py-1.5 bg-neutral-600;
+}
+
+.layout-preview--bold .layout-preview__mark {
+  @apply bg-neutral-50;
+}
+
+.layout-preview--bold .layout-preview__title {
+  @apply bg-neutral-50/70;
+}
+
+/* Classic: no logo mark, meta aligned right. */
+.layout-preview--classic .layout-preview__mark {
+  @apply hidden;
+}
+
+.layout-preview--classic .layout-preview__meta {
+  @apply items-end;
+}
+
+.layout-preview--classic .layout-preview__meta span {
+  width: 45%;
+}
+
+/* Centered: everything on the middle axis. */
+.layout-preview--centered .layout-preview__head {
+  @apply flex-col items-center gap-1;
+}
+
+.layout-preview--centered .layout-preview__title {
+  @apply w-3/4 flex-none;
+}
+
+.layout-preview--centered .layout-preview__meta {
+  @apply items-center;
+}
+
+.layout-preview--centered .layout-preview__total {
+  @apply justify-center;
+}
+
+/* ── Theme picker ──────────────────────────────────────── */
+
+.theme-picker {
+  @apply flex flex-wrap gap-2.5 w-full;
+}
+
+.theme-picker__swatch {
+  @apply flex-1 rounded-lg border border-neutral-200 transition-transform;
+  min-width: 44px;
+  height: 30px;
+}
+
+.theme-picker__swatch:hover {
+  transform: translateY(-1px);
+}
+
+.theme-picker__swatch--selected {
+  @apply border-neutral-900;
+  box-shadow: 0 0 0 1px var(--color-neutral-900);
+}
+
+/* ── Option cards ──────────────────────────────────────── */
+
+.option-cards {
+  @apply grid gap-2.5 w-full;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.option-card {
+  @apply flex flex-col gap-5 items-start p-4 rounded-[20px] bg-neutral-50 border border-neutral-200 text-left transition-colors;
+}
+
+.option-card:hover {
+  @apply border-neutral-400;
+}
+
+.option-card--selected {
+  @apply border-neutral-900;
+  box-shadow: inset 0 0 0 1px var(--color-neutral-900);
+}
+
+.option-card__top {
+  @apply flex items-center justify-between w-full;
+}
+
+.option-card__icon {
+  @apply flex items-center justify-center size-11 rounded-full bg-neutral-100 text-neutral-900;
+}
+
+.option-card__check {
+  @apply flex items-center justify-center size-6 rounded-full bg-primary text-neutral-50;
+}
+
+.option-card__body {
+  @apply flex flex-col gap-1 items-start;
+}
+
+.option-card__name {
+  @apply text-base font-medium text-neutral-900;
+}
+
+.option-card__description {
+  @apply text-xs font-normal text-black-200;
+}
+
+/* ── Chip picker ───────────────────────────────────────── */
+
+.chip-picker {
+  @apply flex flex-wrap gap-2.5 w-full;
+}
+
+.chip-picker__chip {
+  @apply shrink-0;
+}
+
+/* ── Mobile ────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .app-shell__content.profile {
+    @apply flex-col gap-5 justify-start;
+  }
+
+  .profile__panel {
+    @apply w-full;
+    max-width: none;
+  }
+
+  /* The nav becomes a horizontally scrolling tab strip. */
+  .settings-nav {
+    @apply flex-row w-full overflow-x-auto pb-1;
+    scrollbar-width: none;
+  }
+
+  .settings-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .settings-nav__link {
+    @apply shrink-0 w-auto px-3.5 bg-neutral-50;
+  }
+}
+
+@media (max-width: 767px) {
+  .settings-card {
+    @apply p-4 gap-5 rounded-[20px];
+  }
+
+  .settings-card--split {
+    @apply flex-col items-start;
+  }
+
+  .settings-field-row {
+    @apply flex-col gap-4;
+  }
+
+  .settings-field-row--half > .settings-field {
+    @apply w-full;
+  }
+
+  .layout-picker {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .option-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-header__heading {
+    @apply text-xl;
+  }
+}

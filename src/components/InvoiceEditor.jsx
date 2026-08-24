@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { UnitDropdown } from './UnitDropdown';
 import { useCustomers } from '../data/customers';
 import {
   ISSUER,
@@ -12,6 +13,8 @@ import {
   isBlankLineItem,
   lineTotal,
 } from '../data/invoices';
+import { useIssuer } from '../data/profile';
+import { BrandMark } from './invoice/InvoiceMasthead';
 import './InvoiceDocument.css';
 import './InvoiceEditor.css';
 
@@ -85,6 +88,7 @@ const Stepper = ({ label, onStep }) => (
  */
 export const InvoiceEditor = ({ draft, onChange }) => {
   const customers = useCustomers();
+  const issuer = useIssuer();
   const [suggesting, setSuggesting] = useState(false);
   const { subtotal, tax, total } = invoiceTotals(draft.items);
 
@@ -115,11 +119,11 @@ export const InvoiceEditor = ({ draft, onChange }) => {
       <div className="invoice-doc__section">
         <header className="invoice-doc__masthead">
           <div className="invoice-doc__brand">
-            <span className="invoice-doc__brand-mark">{ISSUER.name[0]}</span>
+            <BrandMark issuer={issuer} />
             <div className="invoice-doc__brand-body">
-              <span className="invoice-doc__brand-name">{ISSUER.name}</span>
-              <span className="invoice-doc__brand-line">{ISSUER.address}</span>
-              <span className="invoice-doc__brand-line">{ISSUER.contact}</span>
+              <span className="invoice-doc__brand-name">{issuer.name}</span>
+              <span className="invoice-doc__brand-line">{issuer.address}</span>
+              <span className="invoice-doc__brand-line">{issuer.contact}</span>
             </div>
           </div>
 
@@ -225,21 +229,11 @@ export const InvoiceEditor = ({ draft, onChange }) => {
               />
             </span>
 
-            <span className="invoice-doc__cell invoice-editor__underline">
-              <select
-                className="invoice-doc__text invoice-doc__text--center invoice-editor__select"
+            <span className="invoice-doc__cell invoice-editor__underline flex justify-center">
+              <UnitDropdown
                 value={item.unit}
-                onChange={(event) => setItem(index, { unit: event.target.value })}
-                aria-label="Unit"
-              >
-                <option value="">-</option>
-                {LINE_UNITS.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="invoice-editor__caret" size={16} strokeWidth={2} />
+                onChange={(unit) => setItem(index, { unit })}
+              />
             </span>
 
             <span className="invoice-doc__cell invoice-editor__underline">

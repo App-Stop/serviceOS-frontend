@@ -1,0 +1,187 @@
+@reference '../index.css';
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.reviews__content {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+/* ── Metrics Cards Grid ────────────────────────────────── */
+
+.reviews__metrics {
+  @apply grid gap-5 w-full;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.reviews__metric-card {
+  @apply flex flex-col gap-5 p-4 rounded-[30px] bg-white border border-neutral-200;
+}
+
+.reviews__metric-icon {
+  @apply flex items-center justify-center size-11 rounded-full bg-neutral-200 text-neutral-900 shrink-0;
+}
+
+.reviews__metric-body {
+  @apply flex flex-col gap-1 items-start whitespace-nowrap;
+}
+
+.reviews__metric-value-row {
+  @apply flex items-center gap-1.5 text-[32px] font-semibold text-neutral-900 leading-tight;
+}
+
+.reviews__metric-label {
+  @apply text-sm font-normal text-black-200;
+}
+
+.reviews__star-icon {
+  @apply size-6 text-yellow-500 fill-yellow-500 shrink-0;
+}
+
+/* ── Analytics Row ─────────────────────────────────────── */
+
+.reviews__analytics {
+  @apply grid gap-5 w-full items-start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.reviews__card {
+  @apply flex flex-col gap-5 p-4 rounded-[30px] bg-white border border-neutral-200 w-full;
+}
+
+.reviews__card-header {
+  @apply flex items-center justify-between h-8 w-full;
+}
+
+.reviews__card-title {
+  @apply text-base font-medium text-neutral-900 whitespace-nowrap;
+}
+
+.reviews__dist-list {
+  @apply flex flex-col gap-4 w-full;
+}
+
+.reviews__dist-row {
+  @apply flex items-center gap-2.5 w-full;
+}
+
+.reviews__dist-label {
+  @apply w-[50px] shrink-0 text-base font-normal text-neutral-900;
+}
+
+.reviews__dist-bar-wrap {
+  @apply flex-1 min-w-0 h-4 rounded-full bg-neutral-200 overflow-hidden;
+}
+
+.reviews__dist-bar-fill {
+  @apply h-full rounded-full bg-primary transition-all duration-300;
+}
+
+.reviews__dist-percent {
+  @apply w-10 shrink-0 text-right text-base font-normal text-neutral-900;
+}
+
+.reviews__tech-label {
+  @apply w-[130px] shrink-0 text-base font-normal text-neutral-900 truncate;
+}
+
+/* ── Reviews Toolbar ───────────────────────────────────── */
+
+.reviews__toolbar {
+  @apply flex items-center justify-between gap-5 w-full;
+}
+
+.reviews__rating-filters {
+  @apply flex items-center gap-2.5;
+}
+
+/* ── All Reviews Card & Items ──────────────────────────── */
+
+.reviews__list {
+  @apply flex flex-col gap-5 w-full;
+}
+
+.reviews__item {
+  @apply flex items-start gap-10 py-4 border-b border-neutral-200 last:border-0 w-full;
+}
+
+.reviews__item-meta {
+  @apply flex flex-col gap-1.5 items-start shrink-0 w-[120px];
+}
+
+.reviews__stars-row {
+  @apply flex items-center gap-0.5 text-yellow-500;
+}
+
+.reviews__item-date {
+  @apply text-xs font-normal text-black-200 whitespace-nowrap;
+}
+
+.reviews__item-body {
+  @apply flex flex-col flex-1 min-w-0 gap-1.5 items-start;
+}
+
+.reviews__item-title {
+  @apply text-base font-medium text-neutral-900 leading-snug;
+}
+
+.reviews__item-comment {
+  @apply text-sm font-normal text-black-500 leading-relaxed;
+}
+
+.reviews__item-customer {
+  @apply flex flex-col gap-1 items-start text-right shrink-0 w-[180px];
+}
+
+.reviews__customer-name {
+  @apply text-base font-medium text-neutral-900 truncate w-full;
+}
+
+.reviews__customer-tenure {
+  @apply text-sm font-normal text-black-200 truncate w-full;
+}
+
+.reviews__empty {
+  @apply py-10 text-center text-sm text-black-200 w-full;
+}
+
+/* ── Responsive Overrides ──────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .reviews__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .reviews__analytics {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .reviews__metrics {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .reviews__toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .reviews__rating-filters {
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    max-width: 100%;
+  }
+
+  .reviews__item {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .reviews__item-meta,
+  .reviews__item-customer {
+    width: 100%;
+    text-align: left;
+    align-items: flex-start;
+  }
+}

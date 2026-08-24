@@ -21,8 +21,21 @@
 /* ── Menu ──────────────────────────────────────────────── */
 
 .filter-dropdown__menu {
-  @apply absolute left-0 top-full z-30 flex flex-col items-start mt-2 p-1 rounded-[24px] overflow-hidden bg-neutral-50;
-  box-shadow: 0 0 40px 0 rgb(0 0 0 / 0.16);
+  @apply absolute top-full flex flex-col items-start mt-2 p-1 rounded-[24px] overflow-hidden bg-neutral-50;
+  z-index: 100 !important;
+  box-shadow: 0 12px 40px 0 rgb(0 0 0 / 0.18);
+  right: 0;
+  left: auto;
+}
+
+.filter-dropdown__menu--left {
+  left: 0;
+  right: auto;
+}
+
+.filter-dropdown__menu--right {
+  right: 0;
+  left: auto;
 }
 
 .filter-dropdown__option {

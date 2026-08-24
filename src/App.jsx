@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Onboarding from './pages/Onboarding'
 import Customers from './pages/Customers'
 import CustomerDetail from './pages/CustomerDetail'
+import Schedule from './pages/Schedule'
 import Jobs from './pages/Jobs'
 import JobDetail from './pages/JobDetail'
 import Invoices from './pages/Invoices'
@@ -15,6 +16,9 @@ import InvoiceDetail from './pages/InvoiceDetail'
 import Team from './pages/Team'
 import TeamDetail from './pages/TeamDetail'
 import Communications from './pages/Communications'
+import Reviews from './pages/Reviews'
+import Reports from './pages/Reports'
+import Profile from './pages/Profile'
 
 const App = () => {
   return (
@@ -26,6 +30,7 @@ const App = () => {
       <Route path='/welcome' element={<Welcome />} />
       <Route path='/customers' element={<Customers />} />
       <Route path='/customers/:id' element={<CustomerDetail />} />
+      <Route path='/schedule' element={<Schedule />} />
       <Route path='/jobs' element={<Jobs />} />
       <Route path='/jobs/:id' element={<JobDetail />} />
       <Route path='/invoices' element={<Invoices />} />
@@ -36,6 +41,9 @@ const App = () => {
       <Route path='/communication' element={<Communications />} />
       <Route path='/team' element={<Team />} />
       <Route path='/team/:id' element={<TeamDetail />} />
+      <Route path='/reviews' element={<Reviews />} />
+      <Route path='/reports' element={<Reports />} />
+      <Route path='/profile' element={<Profile />} />
     </Routes>
   )
 }

@@ -9,8 +9,15 @@
 }
 
 .form-modal {
-  @apply flex flex-col gap-5 w-full max-h-full overflow-y-auto p-[30px] rounded-[30px] bg-neutral-50 shadow-modal-low;
+  @apply flex flex-col gap-5 w-full p-[30px] rounded-[30px] bg-neutral-50 shadow-modal-low;
   max-width: 480px;
+  overflow: visible !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.form-modal::-webkit-scrollbar {
+  display: none;
 }
 
 .form-modal__header {
@@ -37,8 +44,54 @@
   @apply text-xs font-normal text-black-200;
 }
 
+/* Only a nudge — the word count is guidance, not a hard stop. */
+.form-modal__hint--over {
+  @apply text-danger;
+}
+
 .form-modal__actions {
   @apply flex items-center gap-2.5;
+}
+
+/* ── Job modal specifics ───────────────────────────────── */
+
+.form-modal--wide {
+  max-width: 560px;
+}
+
+.form-modal--wide .form-modal__actions {
+  @apply justify-end;
+}
+
+.form-modal__textarea {
+  @apply w-full resize-none;
+  min-height: 80px;
+  border-radius: 20px !important;
+}
+
+.form-modal__datetime {
+  @apply relative w-full;
+}
+
+.form-modal__datetime .field-input {
+  @apply pr-11;
+}
+
+.form-modal__datetime-icon {
+  @apply absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-900 pointer-events-none;
+}
+
+/* The native indicator sits under our icon and opens the picker on click. */
+.form-modal__datetime input::-webkit-calendar-picker-indicator {
+  @apply absolute right-0 top-0 h-full w-11 cursor-pointer opacity-0;
+}
+
+.form-modal .cta-button:disabled {
+  @apply opacity-20 cursor-not-allowed;
+}
+
+.form-modal .cta-button:disabled:hover {
+  @apply bg-primary;
 }
 
 /* ── Modal Input & Dropdown Styling ────────────────────── */

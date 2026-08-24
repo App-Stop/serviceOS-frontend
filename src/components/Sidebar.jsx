@@ -12,6 +12,7 @@ import {
   ChartColumn,
   UserRound,
 } from 'lucide-react';
+import { useCurrentUser } from '../data';
 import './Sidebar.css';
 
 const navItems = [
@@ -27,6 +28,8 @@ const navItems = [
 ];
 
 export const Sidebar = ({ collapsed = false, onMobileSelect }) => {
+  const user = useCurrentUser();
+
   return (
     <aside className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}`}>
       <div className="sidebar__top">
@@ -53,15 +56,26 @@ export const Sidebar = ({ collapsed = false, onMobileSelect }) => {
         </nav>
       </div>
 
-      <a className="sidebar__profile" href="#profile">
+      <NavLink
+        to="/profile"
+        title={collapsed ? user.name : undefined}
+        onClick={() => onMobileSelect?.()}
+        className={({ isActive }) =>
+          `sidebar__profile${isActive ? ' sidebar__profile--active' : ''}`
+        }
+      >
         <span className="sidebar__avatar">
-          <UserRound size={20} strokeWidth={2} />
+          {user.photo ? (
+            <img className="sidebar__avatar-image" src={user.photo} alt="" />
+          ) : (
+            <UserRound size={20} strokeWidth={2} />
+          )}
         </span>
         <span className="sidebar__profile-meta">
-          <span className="sidebar__profile-name">John Doe</span>
-          <span className="sidebar__profile-role">Super Admin</span>
+          <span className="sidebar__profile-name">{user.name}</span>
+          <span className="sidebar__profile-role">{user.role}</span>
         </span>
-      </a>
+      </NavLink>
     </aside>
   );
 };

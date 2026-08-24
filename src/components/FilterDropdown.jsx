@@ -8,7 +8,14 @@ import './FilterDropdown.css';
  *
  * `options`: [{ id, label, dot? }]
  */
-export const FilterDropdown = ({ label, value, options, onChange, fullWidth = false }) => {
+export const FilterDropdown = ({
+  label,
+  value,
+  options,
+  onChange,
+  fullWidth = false,
+  align = 'auto', // 'auto' | 'left' | 'right'
+}) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -29,6 +36,8 @@ export const FilterDropdown = ({ label, value, options, onChange, fullWidth = fa
   }, [open]);
 
   const selected = options.find((option) => option.id === value);
+  const menuAlignClass =
+    align === 'left' ? ' filter-dropdown__menu--left' : ' filter-dropdown__menu--right';
 
   return (
     <div className={`filter-dropdown${fullWidth ? ' filter-dropdown--full' : ''}`} ref={ref}>
@@ -52,7 +61,11 @@ export const FilterDropdown = ({ label, value, options, onChange, fullWidth = fa
       </button>
 
       {open && (
-        <div className="filter-dropdown__menu" role="listbox" aria-label={label}>
+        <div
+          className={`filter-dropdown__menu${menuAlignClass}`}
+          role="listbox"
+          aria-label={label}
+        >
           {options.map((option) => {
             const isSelected = option.id === value;
             return (

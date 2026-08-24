@@ -214,6 +214,21 @@ export const SEED_MEMBERS = [
   },
 ];
 
+/** Crew swatches, keyed by the `color` name each crew carries. */
+export const CREW_COLORS = {
+  pink: '#ff1fad',
+  violet: '#903bff',
+  green: '#00c064',
+  cyan: '#00c9c6',
+  red: '#f30000',
+  orange: '#f96c00',
+  blue: '#0095ff',
+  yellow: '#edba00',
+  maroon: '#bf0063',
+};
+
+export const crewColor = (name) => CREW_COLORS[name] ?? CREW_COLORS.violet;
+
 export const SEED_CREWS = [
   { id: 1, name: 'North Crew', lead: 'JJ Thompson', assignedJob: 'AC Ductwork Repair', color: 'pink', membersCount: 4, members: ['JJ Thompson', 'David Wilson', 'Michael Johnson', 'Tom Bradley'], status: 'assigned' },
   { id: 2, name: 'South Crew', lead: 'Samantha Lee', assignedJob: 'Furnace Installation', color: 'green', membersCount: 4, members: ['Samantha Lee', 'Mike Rivera', 'Jake Morris', 'Lisa Patel'], status: 'unassigned' },
@@ -325,4 +340,10 @@ export const updateCrew = (id, patch) => {
 
 export const removeCrew = (id) => {
   commitCrews(crews.filter((crew) => crew.id !== id));
+};
+
+/** Restores members and crews to the seeded dataset (Profile → Danger Zone). */
+export const resetTeam = () => {
+  commitMembers(SEED_MEMBERS);
+  commitCrews(SEED_CREWS);
 };

@@ -81,6 +81,23 @@
   background: var(--color-black-500);
 }
 
+.sidebar__profile:hover {
+  background: var(--color-black-500);
+}
+
+.sidebar__profile--active {
+  background: var(--color-black-500);
+}
+
+/* Uploaded photos fill the avatar circle; the fallback keeps its padding. */
+.sidebar__avatar:has(.sidebar__avatar-image) {
+  @apply p-0 size-9 overflow-hidden;
+}
+
+.sidebar__avatar-image {
+  @apply size-full object-cover;
+}
+
 .sidebar__profile-meta {
   @apply flex flex-col justify-center gap-0.5 whitespace-nowrap;
 }

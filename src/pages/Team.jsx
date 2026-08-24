@@ -13,28 +13,17 @@ import {
   addCrew,
   updateCrew,
   removeCrew,
+  crewColor,
 } from '../data/team';
 import { initials } from '../data/customers';
 import glow from '../assets/button-glow.svg';
 import './Team.css';
 
-const CREW_DOT_COLORS = {
-  pink: '#ff1fad',
-  violet: '#903bff',
-  green: '#00c064',
-  cyan: '#00c9c6',
-  red: '#f30000',
-  orange: '#f96c00',
-  blue: '#0095ff',
-  yellow: '#edba00',
-  maroon: '#bf0063',
-};
-
 const getCrewColor = (crewName, crewsList) => {
   const found = crewsList.find(
     (c) => c.name.toLowerCase().trim() === crewName.toLowerCase().trim(),
   );
-  return found ? (CREW_DOT_COLORS[found.color] ?? '#903bff') : '#903bff';
+  return crewColor(found?.color);
 };
 
 const Team = () => {
@@ -318,7 +307,7 @@ const Team = () => {
                             className="team__crew-dot"
                             style={{
                               backgroundColor:
-                                CREW_DOT_COLORS[crew.color] ?? '#903bff',
+                                crewColor(crew.color),
                             }}
                           />
                           {crew.name}

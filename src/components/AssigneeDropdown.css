@@ -1,0 +1,83 @@
+@reference '../index.css';
+
+/* ── Trigger ───────────────────────────────────────────── */
+
+.assignee {
+  @apply relative w-full;
+}
+
+.assignee__trigger {
+  @apply flex items-center gap-2 w-full px-3.5 py-2.5 rounded-[30px] bg-white border border-neutral-200 text-sm font-normal leading-6 text-neutral-900 transition-colors;
+}
+
+.assignee__trigger:hover {
+  @apply bg-neutral-100;
+}
+
+.assignee__value {
+  @apply flex-1 min-w-0 text-left truncate;
+}
+
+.assignee__value--empty {
+  @apply text-black-200;
+}
+
+.assignee__caret {
+  @apply shrink-0 text-neutral-900;
+}
+
+/* ── Menu ──────────────────────────────────────────────── */
+
+.assignee__menu {
+  @apply absolute left-0 right-0 top-full z-50 mt-2 flex flex-col gap-2.5 p-2.5 rounded-[24px] bg-white;
+  box-shadow: 0 12px 40px 0 rgb(0 0 0 / 0.18);
+}
+
+.assignee__tabs {
+  @apply flex items-center gap-2.5 w-full;
+}
+
+.assignee__tab {
+  @apply flex flex-1 min-w-0 items-center justify-center h-9 px-3 rounded-full bg-white border border-neutral-200 text-sm font-medium text-neutral-900 transition-colors;
+}
+
+.assignee__tab:hover {
+  @apply bg-neutral-100;
+}
+
+.assignee__tab--selected,
+.assignee__tab--selected:hover {
+  @apply bg-primary border-primary text-white;
+}
+
+.assignee__options {
+  @apply flex flex-col items-stretch w-full max-h-60 overflow-y-auto;
+}
+
+.assignee__option {
+  @apply flex items-center justify-between gap-2 w-full px-2.5 py-2 rounded-[20px] text-sm font-normal text-neutral-900 text-left transition-colors;
+}
+
+.assignee__option:hover {
+  @apply bg-neutral-100;
+}
+
+.assignee__option--selected {
+  @apply bg-neutral-100;
+}
+
+.assignee__label {
+  @apply flex items-center gap-2.5 min-w-0 truncate;
+}
+
+.assignee__avatar {
+  @apply size-6 text-[10px] leading-none shrink-0;
+}
+
+.assignee__dot {
+  @apply size-2.5 rounded-full shrink-0;
+}
+
+.assignee__check {
+  @apply shrink-0 text-neutral-900;
+}

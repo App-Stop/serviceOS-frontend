@@ -1,12 +1,13 @@
 import React from 'react';
 import {
-  ISSUER,
   TAX_RATE,
   invoiceTotals,
   lineTotal,
   formatMoney,
   useBillTo,
 } from '../data/invoices';
+import { useIssuer, useInvoiceLayout } from '../data/profile';
+import { InvoiceMasthead } from './invoice/InvoiceMasthead';
 import stripeLogo from '../assets/stripe.svg';
 import './InvoiceDocument.css';
 
@@ -16,33 +17,29 @@ const taxLabel = `Sales Tax (${(TAX_RATE * 100).toFixed(2).replace(/\.?0+$/, '')
 /**
  * The finished invoice as the customer sees it — the read-only twin of
  * `InvoiceEditor`. Paid invoices get the diagonal watermark from the design.
+ *
+ * The header treatment and the company details both come from the Branding
+ * and Business Info settings, so changing either re-renders every invoice.
  */
 export const InvoiceDocument = ({ invoice }) => {
   const billTo = useBillTo(invoice);
+  const issuer = useIssuer();
+  const layout = useInvoiceLayout();
   const { subtotal, tax, total } = invoiceTotals(invoice.items);
   const paid = invoice.status === 'paid';
 
   return (
-    <article className="invoice-doc">
+    <article className={`invoice-doc invoice-doc--${layout}`}>
       {paid && <span className="invoice-doc__watermark">Paid</span>}
 
+      <InvoiceMasthead
+        layout={layout}
+        issuer={issuer}
+        number={invoice.number}
+        created={invoice.created}
+      />
+
       <div className="invoice-doc__section">
-        <header className="invoice-doc__masthead">
-          <div className="invoice-doc__brand">
-            <span className="invoice-doc__brand-mark">{ISSUER.name[0]}</span>
-            <div className="invoice-doc__brand-body">
-              <span className="invoice-doc__brand-name">{ISSUER.name}</span>
-              <span className="invoice-doc__brand-line">{ISSUER.address}</span>
-              <span className="invoice-doc__brand-line">{ISSUER.contact}</span>
-            </div>
-          </div>
-
-          <div className="invoice-doc__ref">
-            <span className="invoice-doc__number">{invoice.number}</span>
-            <span className="invoice-doc__ref-caption">Set {invoice.created}</span>
-          </div>
-        </header>
-
         <div className="invoice-doc__field invoice-doc__field--narrow">
           <span className="invoice-doc__label">Bill to</span>
           <span className="invoice-doc__line">
