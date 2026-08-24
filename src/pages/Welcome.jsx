@@ -61,7 +61,7 @@ export const Welcome = () => {
 
           <button
             type="button"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/dashboard')}
             className="cursor-pointer overflow-hidden text-ellipsis text-center text-[14px] font-normal leading-[normal] text-neutral-500 whitespace-nowrap"
           >
             Skip for now

@@ -15,7 +15,7 @@ import {
 import './Sidebar.css';
 
 const navItems = [
-  { name: 'Home', path: '/', icon: House },
+  { name: 'Home', path: '/dashboard', icon: House },
   { name: 'Customers', path: '/customers', icon: UsersRound },
   { name: 'Schedule', path: '/schedule', icon: CalendarRange },
   { name: 'Jobs', path: '/jobs', icon: BriefcaseBusiness },

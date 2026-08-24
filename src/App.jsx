@@ -18,8 +18,9 @@ import TeamDetail from './pages/TeamDetail'
 const App = () => {
   return (
     <Routes>
-      <Route path='/' element={<Dashboard />} />
+      <Route path='/' element={<SignIn />} />
       <Route path='/login' element={<SignIn />} />
+      <Route path='/dashboard' element={<Dashboard />} />
       <Route path='/verify-otp' element={<VerifyOtp />} />
       <Route path='/welcome' element={<Welcome />} />
       <Route path='/customers' element={<Customers />} />

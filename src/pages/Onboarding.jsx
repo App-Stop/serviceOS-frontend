@@ -58,7 +58,7 @@ const Onboarding = () => {
     case 'services':
       return <StepServices {...props} />;
     case 'review':
-      return <StepReview {...props} onNext={() => navigate('/')} />;
+      return <StepReview {...props} onNext={() => navigate('/dashboard')} />;
     default:
       return <StepBusiness {...props} />;
   }
