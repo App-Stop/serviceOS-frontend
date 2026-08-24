@@ -9,6 +9,11 @@ import Customers from './pages/Customers'
 import CustomerDetail from './pages/CustomerDetail'
 import Jobs from './pages/Jobs'
 import JobDetail from './pages/JobDetail'
+import Invoices from './pages/Invoices'
+import InvoiceBuilder from './pages/InvoiceBuilder'
+import InvoiceDetail from './pages/InvoiceDetail'
+import Team from './pages/Team'
+import TeamDetail from './pages/TeamDetail'
 
 const App = () => {
   return (
@@ -21,7 +26,13 @@ const App = () => {
       <Route path='/customers/:id' element={<CustomerDetail />} />
       <Route path='/jobs' element={<Jobs />} />
       <Route path='/jobs/:id' element={<JobDetail />} />
+      <Route path='/invoices' element={<Invoices />} />
+      <Route path='/invoices/new' element={<InvoiceBuilder />} />
+      <Route path='/invoices/:id/edit' element={<InvoiceBuilder />} />
+      <Route path='/invoices/:id' element={<InvoiceDetail />} />
       <Route path='/onboarding' element={<Onboarding />} />
+      <Route path='/team' element={<Team />} />
+      <Route path='/team/:id' element={<TeamDetail />} />
     </Routes>
   )
 }

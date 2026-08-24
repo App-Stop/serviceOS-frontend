@@ -337,6 +337,19 @@
   @apply bg-red-light text-red;
 }
 
+/* Priority variants — used by the activity feed when priority changes. */
+.status-chip--urgent {
+  @apply bg-error-light text-error;
+}
+
+.status-chip--high {
+  @apply bg-danger-light text-danger;
+}
+
+.status-chip--normal {
+  @apply bg-neutral-200 text-black-200;
+}
+
 /* ── Job priority badge ────────────────────────────────── */
 
 .priority-badge {
@@ -456,4 +469,31 @@
 
 .timeline__note-text {
   @apply min-w-0 truncate;
+}
+
+/* ── Invoice status chip ───────────────────────────────── */
+
+.invoice-chip {
+  @apply flex items-center justify-center shrink-0 px-sm py-xs rounded-[20px] text-xs font-medium text-center whitespace-nowrap;
+}
+
+/* Larger form used beside the invoice detail heading. */
+.invoice-chip--lg {
+  @apply px-2.5 text-sm;
+}
+
+.invoice-chip--draft {
+  @apply bg-neutral-200 text-black-200;
+}
+
+.invoice-chip--sent {
+  @apply bg-danger-light text-danger;
+}
+
+.invoice-chip--paid {
+  @apply bg-success-light text-success;
+}
+
+.invoice-chip--overdue {
+  @apply bg-error-light text-error;
 }

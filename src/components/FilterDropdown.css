@@ -1,0 +1,54 @@
+@reference '../index.css';
+
+/* ── Trigger ───────────────────────────────────────────── */
+
+.filter-dropdown {
+  @apply relative shrink-0;
+}
+
+.filter-dropdown__trigger {
+  @apply flex items-center gap-md h-11 px-[14px] py-2.5 rounded-[30px] bg-neutral-50 border border-neutral-200 text-sm font-normal leading-6 text-neutral-900 whitespace-nowrap transition-colors;
+}
+
+.filter-dropdown__trigger:hover {
+  @apply bg-neutral-100;
+}
+
+.filter-dropdown__caret {
+  @apply shrink-0 text-neutral-900;
+}
+
+/* ── Menu ──────────────────────────────────────────────── */
+
+.filter-dropdown__menu {
+  @apply absolute left-0 top-full z-30 flex flex-col items-start mt-2 p-1 rounded-[24px] overflow-hidden bg-neutral-50;
+  box-shadow: 0 0 40px 0 rgb(0 0 0 / 0.16);
+}
+
+.filter-dropdown__option {
+  @apply flex items-center justify-between gap-md px-[14px] py-2.5 rounded-sm text-left text-sm font-normal leading-5 text-neutral-900 whitespace-nowrap transition-colors;
+  width: 200px;
+}
+
+.filter-dropdown__option:hover {
+  @apply bg-neutral-100;
+}
+
+.filter-dropdown__option--selected {
+  @apply rounded-[20px] bg-neutral-100;
+}
+
+.filter-dropdown__label {
+  @apply flex items-center gap-md min-w-0;
+}
+
+.filter-dropdown__dot {
+  @apply shrink-0 rounded-full;
+  width: 10px;
+  height: 10px;
+  background: var(--filter-dot-color, currentColor);
+}
+
+.filter-dropdown__check {
+  @apply shrink-0 text-neutral-900;
+}

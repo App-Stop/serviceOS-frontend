@@ -11,8 +11,10 @@ import './AppShell.css';
  *
  * `topbarLead` renders after the collapse toggle, for page-level controls
  * such as the customer detail screen's "Back to Customers" button.
+ * `topbarActions` replaces the default search / notification buttons, which
+ * the invoice builder swaps for its own save controls.
  */
-export const AppShell = ({ topbarLead, children }) => {
+export const AppShell = ({ topbarLead, topbarActions, children }) => {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -52,17 +54,21 @@ export const AppShell = ({ topbarLead, children }) => {
           </div>
 
           <div className="app-shell__topbar-actions">
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => setSearchOpen(true)}
-              aria-label="Search"
-            >
-              <Search size={22} strokeWidth={2} />
-            </button>
-            <button type="button" className="icon-button" aria-label="Notifications">
-              <Bell size={22} strokeWidth={2} />
-            </button>
+            {topbarActions ?? (
+              <>
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Search"
+                >
+                  <Search size={22} strokeWidth={2} />
+                </button>
+                <button type="button" className="icon-button" aria-label="Notifications">
+                  <Bell size={22} strokeWidth={2} />
+                </button>
+              </>
+            )}
           </div>
         </header>
 

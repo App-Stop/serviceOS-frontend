@@ -14,13 +14,10 @@
   @apply flex items-center shrink-0;
 }
 
+/* Positioned by the Popover wrapper, which portals it out of the table. */
 .status-menu__list {
-  @apply absolute left-0 top-full z-20 flex flex-col gap-0.5 mt-1.5 p-1.5 rounded-2xl bg-neutral-50 border border-neutral-200 shadow-modal-low;
+  @apply flex flex-col gap-0.5 p-1.5 rounded-2xl bg-neutral-50 border border-neutral-200 shadow-modal-low;
   min-width: 168px;
-}
-
-.status-menu__list--right {
-  @apply left-auto right-0;
 }
 
 .status-menu__option {

@@ -36,23 +36,6 @@
   @apply flex items-center gap-2.5;
 }
 
-/* Rounded select styled to match the Figma "This Week" / "Status" controls. */
-.jobs__select {
-  @apply flex items-center gap-md shrink-0 px-[14px] py-2.5 rounded-[30px] bg-neutral-50 border border-neutral-200 text-sm font-normal leading-6 text-neutral-900 transition-colors;
-}
-
-.jobs__select:hover {
-  @apply bg-neutral-100;
-}
-
-.jobs__select select {
-  @apply bg-transparent text-sm font-normal text-neutral-900 outline-none appearance-none cursor-pointer;
-}
-
-.jobs__select-caret {
-  @apply shrink-0 pointer-events-none text-neutral-900;
-}
-
 /* ── Table ─────────────────────────────────────────────── */
 
 .jobs__table-wrap {

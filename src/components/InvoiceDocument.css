@@ -1,0 +1,205 @@
+@reference '../index.css';
+
+/*
+ * The invoice "paper" — the 540px card shared by the read-only detail screen
+ * and the editable builder. Layout and typography live here; only the
+ * interactive affordances (steppers, selects, remove buttons) are editor-only.
+ */
+
+.invoice-doc {
+  @apply relative flex flex-col shrink-0 gap-[30px] items-start w-[540px] max-w-full py-[30px] overflow-hidden rounded-[30px] bg-neutral-50 border border-neutral-200;
+}
+
+/* ── Header ────────────────────────────────────────────── */
+
+.invoice-doc__section {
+  @apply flex flex-col gap-[30px] items-start w-full px-[30px] relative z-20;
+}
+
+.invoice-doc__masthead {
+  @apply flex items-start justify-between gap-5 w-full;
+}
+
+.invoice-doc__brand {
+  @apply flex items-start gap-2.5 min-w-0;
+}
+
+.invoice-doc__brand-mark {
+  @apply flex items-center justify-center shrink-0 size-9 rounded-full text-xl font-semibold text-neutral-50;
+  background: var(--color-black-500);
+}
+
+.invoice-doc__brand-body {
+  @apply flex flex-col gap-1 items-start min-w-0;
+}
+
+.invoice-doc__brand-name {
+  @apply text-xl font-semibold text-neutral-900;
+}
+
+.invoice-doc__brand-line {
+  @apply text-xs font-normal leading-4 text-black-200;
+}
+
+.invoice-doc__ref {
+  @apply flex flex-col gap-1 items-end shrink-0 text-right whitespace-nowrap;
+}
+
+.invoice-doc__number {
+  @apply text-xl font-semibold text-neutral-900;
+}
+
+.invoice-doc__ref-caption {
+  @apply text-xs font-normal leading-4 text-black-200;
+}
+
+/* ── Field blocks (FROM / BILL TO / dates) ─────────────── */
+
+.invoice-doc__grid {
+  @apply grid gap-5 w-full;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.invoice-doc__field {
+  @apply flex flex-col gap-1.5 items-start min-w-0 w-full;
+}
+
+/* Single-column form of the block, e.g. "BILL TO" on the finished invoice. */
+.invoice-doc__field--narrow {
+  @apply w-[260px] max-w-full;
+}
+
+.invoice-doc__label {
+  @apply text-xs font-normal leading-5 uppercase whitespace-nowrap;
+  color: #848484;
+  letter-spacing: 0.48px;
+}
+
+/* Underlined input line — the design's only field decoration. */
+.invoice-doc__line {
+  @apply flex items-center gap-md w-full py-2.5 border-b border-neutral-200;
+}
+
+.invoice-doc__line-value {
+  @apply flex-1 min-w-0 truncate bg-transparent text-sm font-semibold leading-6 text-neutral-900 outline-none;
+}
+
+.invoice-doc__line-value--regular {
+  @apply font-normal;
+}
+
+.invoice-doc__line-value::placeholder {
+  @apply font-normal text-black-200;
+}
+
+.invoice-doc__line-icon {
+  @apply shrink-0 text-neutral-900;
+}
+
+.invoice-doc__contact {
+  @apply flex flex-col gap-1.5 items-start text-sm font-normal text-black-200;
+}
+
+/* ── Line items ────────────────────────────────────────── */
+
+.invoice-doc__items {
+  @apply flex flex-col items-start w-full;
+}
+
+.invoice-doc__items-head {
+  @apply flex items-center w-full px-[30px] py-1.5 border-b border-neutral-200 text-xs font-normal leading-5 uppercase text-neutral-900;
+  letter-spacing: 0.48px;
+}
+
+/* The builder tints the header the way a spreadsheet does. */
+.invoice-doc__items-head--filled {
+  @apply bg-neutral-100;
+}
+
+.invoice-doc__row {
+  @apply flex items-center w-full px-[30px];
+}
+
+.invoice-doc__cell--description {
+  @apply flex flex-1 min-w-0 items-center gap-md py-2.5;
+}
+
+/* The four fixed numeric columns: unit, qty, price, total. */
+.invoice-doc__cell {
+  @apply flex shrink-0 items-center justify-center gap-md py-2.5 w-[70px];
+}
+
+.invoice-doc__text {
+  @apply flex-1 min-w-0 truncate bg-transparent text-sm font-normal leading-6 text-neutral-900 outline-none;
+}
+
+.invoice-doc__text--center {
+  @apply text-center;
+}
+
+.invoice-doc__text::placeholder {
+  @apply text-black-200;
+}
+
+/* ── Summary (payment method + totals) ─────────────────── */
+
+.invoice-doc__summary {
+  @apply flex items-start justify-end gap-5 w-full px-[30px];
+}
+
+.invoice-doc__method {
+  @apply flex flex-col flex-1 min-w-0 gap-1.5 items-start;
+}
+
+.invoice-doc__method-label {
+  @apply truncate text-sm font-normal leading-5 text-black-200;
+}
+
+.invoice-doc__method-value {
+  @apply flex items-center gap-1.5 text-sm font-semibold leading-5 text-neutral-900;
+}
+
+.invoice-doc__method-logo {
+  @apply size-5 shrink-0;
+}
+
+.invoice-doc__method-hint {
+  @apply text-[10px] font-normal leading-4 text-black-200;
+}
+
+.invoice-doc__totals {
+  @apply flex flex-col shrink-0 gap-2.5 items-start w-[260px];
+}
+
+.invoice-doc__total-row {
+  @apply flex items-center justify-between w-full text-sm leading-5 whitespace-nowrap;
+}
+
+.invoice-doc__total-label {
+  @apply truncate font-normal text-black-200;
+}
+
+.invoice-doc__total-value {
+  @apply truncate text-right font-medium text-neutral-900;
+}
+
+.invoice-doc__total-row--grand {
+  @apply py-2.5 text-xl font-semibold text-neutral-900;
+}
+
+.invoice-doc__rule {
+  @apply w-full border-t border-neutral-200;
+}
+
+/* ── Paid watermark ────────────────────────────────────── */
+
+.invoice-doc__watermark {
+  @apply absolute inset-0 z-0 flex items-center justify-center pointer-events-none select-none text-[180px] font-semibold uppercase;
+  color: var(--color-green-light);
+  transform: rotate(-60deg);
+}
+
+/* Keeps the invoice content above the watermark. */
+.invoice-doc > *:not(.invoice-doc__watermark) {
+  @apply relative z-10;
+}

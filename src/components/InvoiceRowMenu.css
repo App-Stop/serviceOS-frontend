@@ -1,0 +1,37 @@
+@reference '../index.css';
+
+/* ── Invoice row actions menu ──────────────────────────── */
+
+.row-menu {
+  @apply relative inline-flex;
+}
+
+.row-menu__trigger {
+  @apply flex items-center justify-center shrink-0 size-8 rounded-full text-neutral-900 transition-colors;
+}
+
+.row-menu__trigger:hover {
+  @apply bg-neutral-200;
+}
+
+/* Positioned by the Popover wrapper, which portals it out of the table. */
+.row-menu__list {
+  @apply flex flex-col gap-0.5 p-2 rounded-[20px] bg-neutral-50 border border-neutral-200 shadow-modal-low;
+  min-width: 180px;
+}
+
+.row-menu__option {
+  @apply flex items-center gap-2.5 w-full px-2.5 py-2 rounded-2xl text-left text-sm font-medium text-neutral-900 whitespace-nowrap transition-colors;
+}
+
+.row-menu__option:hover {
+  @apply bg-neutral-100;
+}
+
+.row-menu__option--danger {
+  @apply text-error;
+}
+
+.row-menu__option--danger:hover {
+  @apply bg-error-light;
+}

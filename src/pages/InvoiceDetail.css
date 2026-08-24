@@ -1,0 +1,20 @@
+@reference '../index.css';
+
+/* ── Invoice detail ────────────────────────────────────── */
+
+/* Heading stays at the left edge; the paper is centred, as in the design. */
+.invoice-detail__content {
+  @apply items-center;
+}
+
+.invoice-detail__title {
+  @apply self-start;
+}
+
+.invoice-detail__meta {
+  @apply flex items-center gap-2.5;
+}
+
+.invoice-detail__missing {
+  @apply flex flex-col gap-2.5 items-start;
+}

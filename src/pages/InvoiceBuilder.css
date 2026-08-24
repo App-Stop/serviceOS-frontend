@@ -1,0 +1,21 @@
+@reference '../index.css';
+
+/* ── Invoice builder ───────────────────────────────────── */
+
+/* The paper is centred on the page, as in the design. */
+.invoice-builder__content {
+  @apply items-center;
+}
+
+.invoice-builder__actions {
+  @apply flex items-center gap-5;
+}
+
+/* Disabled "Create Invoice" until a customer and a line item are present. */
+.invoice-builder__actions .cta-button:disabled {
+  @apply bg-neutral-300 border-transparent text-neutral-50 shadow-none cursor-not-allowed;
+}
+
+.invoice-builder__actions .cta-button:disabled .cta-button__glow {
+  @apply hidden;
+}

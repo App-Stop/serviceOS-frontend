@@ -1,0 +1,113 @@
+@reference '../index.css';
+
+/*
+ * Editor-only affordances layered on top of `InvoiceDocument.css`: the date
+ * pickers, unit selects, quantity steppers and row remove buttons. The paper
+ * itself keeps using the shared `invoice-doc` classes.
+ */
+
+/* ── Bill-to suggestions ───────────────────────────────── */
+
+.invoice-editor__bill-to {
+  @apply relative z-30;
+}
+
+.invoice-editor__suggestions {
+  @apply absolute left-0 top-20 z-20 flex flex-col gap-0.5 w-full mt-1.5 p-1.5 rounded-2xl bg-neutral-50 border border-neutral-200 shadow-modal-low;
+}
+
+.invoice-editor__suggestion {
+  @apply w-full px-2 py-1.5 rounded-xl text-left text-xs font-medium text-neutral-900 truncate transition-colors;
+}
+
+.invoice-editor__suggestion:hover {
+  @apply bg-neutral-100;
+}
+
+/* ── Date line ─────────────────────────────────────────── */
+
+.invoice-editor__date {
+  @apply relative cursor-pointer;
+}
+
+/* Transparent native picker covering the line — see DateField. */
+.invoice-editor__date-input {
+  @apply absolute inset-0 w-full h-full opacity-0 cursor-pointer;
+}
+
+/* ── Line item controls ────────────────────────────────── */
+
+/* Tighter than the read-only cell, to leave room for the steppers. */
+.invoice-editor__underline {
+  @apply relative gap-1 border-b border-neutral-200;
+}
+
+.invoice-editor__select {
+  @apply cursor-pointer appearance-none;
+}
+
+.invoice-editor__caret {
+  @apply shrink-0 pointer-events-none text-neutral-900;
+}
+
+/* Chrome's spinners duplicate our own stepper. */
+.invoice-doc__row input[type='number']::-webkit-outer-spin-button,
+.invoice-doc__row input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.invoice-doc__row input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Currency glyph pinned to the price input, which cannot carry a prefix. */
+.invoice-editor__amount {
+  @apply flex flex-1 min-w-0 items-center justify-center ml-2;
+}
+
+.invoice-editor__prefix {
+  @apply shrink-0 text-sm font-normal leading-6 text-neutral-900 ml-2;
+}
+
+.invoice-editor__price {
+  @apply text-left;
+}
+
+.invoice-editor__stepper {
+  @apply flex flex-col shrink-0 items-center justify-center text-neutral-900;
+}
+
+.invoice-editor__stepper-button {
+  @apply flex items-center justify-center h-2.5 transition-opacity;
+}
+
+.invoice-editor__stepper-button:hover {
+  @apply opacity-60;
+}
+
+/* ── Row remove ────────────────────────────────────────── */
+
+/* Reserved gutter so the header and every row stay aligned. */
+.invoice-editor__remove-slot {
+  @apply flex shrink-0 items-center justify-center w-6;
+}
+
+.invoice-editor__remove {
+  @apply flex items-center justify-center text-neutral-900 transition-colors;
+}
+
+.invoice-editor__remove:hover {
+  @apply text-error;
+}
+
+/* ── Payment method select ─────────────────────────────── */
+
+.invoice-editor__method-select {
+  @apply flex items-center gap-md w-full max-w-[260px] px-[14px] py-2.5 rounded-[30px] bg-neutral-50 border border-neutral-200;
+}
+
+.invoice-editor__method-input {
+  @apply flex-1 min-w-0 bg-transparent text-sm font-normal leading-6 text-neutral-900 outline-none cursor-pointer appearance-none;
+}

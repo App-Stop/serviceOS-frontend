@@ -9,17 +9,10 @@ import {
   ReceiptText,
   BriefcaseBusiness,
 } from 'lucide-react';
-import { useCustomers, initials } from '../data/customers';
+import { useGlobalSearch, initials } from '../data';
 import './SearchModal.css';
 
-const staticIndex = [
-  { id: 'i-1', group: 'Invoices', kind: 'invoice', title: 'INV-001', meta: 'Mason Ray', to: '/invoices' },
-  { id: 'i-2', group: 'Invoices', kind: 'invoice', title: 'INV-002', meta: 'Mason Ray', to: '/invoices' },
-  { id: 'j-1', group: 'Jobs', kind: 'job', title: 'Maple Wood Park Fix', meta: 'Mason Ray', to: '/jobs' },
-  { id: 'j-2', group: 'Jobs', kind: 'job', title: 'Kitchen Pipe Fix', meta: 'Mason Ray', to: '/jobs' },
-];
-
-const groupOrder = ['Customers', 'Invoices', 'Jobs'];
+const groupOrder = ['Customers', 'Invoices', 'Jobs', 'Team'];
 
 const ResultIcon = ({ item }) => {
   if (item.kind === 'invoice') {
@@ -48,31 +41,7 @@ export const SearchModal = ({ onClose, onSelect }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef(null);
 
-  const customers = useCustomers();
-
-  const searchIndex = useMemo(
-    () => [
-      ...customers.map((customer) => ({
-        id: `c-${customer.id}`,
-        group: 'Customers',
-        kind: 'person',
-        title: customer.name,
-        meta: customer.email,
-        to: `/customers/${customer.id}`,
-      })),
-      ...staticIndex,
-    ],
-    [customers],
-  );
-
-  const results = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    if (!term) return [];
-    return searchIndex.filter(
-      (item) =>
-        item.title.toLowerCase().includes(term) || item.meta.toLowerCase().includes(term),
-    );
-  }, [query, searchIndex]);
+  const results = useGlobalSearch(query);
 
   const groups = useMemo(
     () =>

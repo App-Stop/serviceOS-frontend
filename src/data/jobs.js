@@ -9,7 +9,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-const STORAGE_KEY = 'serviceos.jobs.v1';
+const STORAGE_KEY = 'serviceos.jobs.v2';
 
 /* ── Status + priority vocabulary ──────────────────────── */
 
@@ -43,27 +43,70 @@ export const statusLabel = (id) =>
 export const priorityLabel = (id) =>
   JOB_PRIORITIES.find((priority) => priority.id === id)?.label ?? id;
 
-/* ── Sample activity ───────────────────────────────────── */
+/* ── Activity feed ─────────────────────────────────────── */
 
-const activityTemplate = [
-  { id: 'a1', verb: 'changed', target: 'AC Ductwork Repair', connector: 'to', chip: { label: 'Scheduled', variant: 'scheduled' }, time: '10m ago' },
-  { id: 'a2', verb: 'completed', target: 'Electrical Inspection', time: '5m ago' },
-  { id: 'a3', actor: 'James Wilson', verb: 'uploaded', target: '3 photos', photos: 3, time: '15m ago' },
-  { id: 'a4', verb: 'updated', target: 'HVAC Repair', connector: 'status to', chip: { label: 'On Site', variant: 'onsite' }, time: '5m ago' },
-];
+/** Who the prototype acts as. Swap for the signed-in user once auth is real. */
+export const CURRENT_USER = 'John Doe (Me)';
+
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+/** Newest-first feed, capped so the card never grows unbounded. */
+const ACTIVITY_LIMIT = 12;
+
+/** "Just now" / "10m ago" / "3h ago" / "2d ago" from a timestamp. */
+export const relativeTime = (at) => {
+  const delta = Date.now() - at;
+  if (delta < MINUTE) return 'Just now';
+  if (delta < HOUR) return `${Math.floor(delta / MINUTE)}m ago`;
+  if (delta < DAY) return `${Math.floor(delta / HOUR)}h ago`;
+  return `${Math.floor(delta / DAY)}d ago`;
+};
+
+/** Live entries carry a timestamp; seeded ones carry a fixed label. */
+export const activityTime = (entry) =>
+  typeof entry.at === 'number' ? relativeTime(entry.at) : entry.time ?? '';
 
 /** Shortened display name used in the activity feed, e.g. "Michael J.". */
 const shortName = (name) => {
-  const [first, last = ''] = name.split(' ');
+  const [first, last = ''] = name.replace(' (Me)', '').split(' ');
   return last ? `${first} ${last[0]}.` : first;
+};
+
+/**
+ * Seeds a job's feed from its own record — creation plus each lifecycle step
+ * it has already passed — so no two jobs share the same canned history.
+ */
+const seedActivity = (job) => {
+  const steps = job.steps ?? {};
+  const entries = JOB_TIMELINE.filter((step) => steps[step.id] && steps[step.id] !== 'Upcoming')
+    .map((step) => ({
+      id: `seed-${step.id}`,
+      actor: shortName(job.technician || job.createdBy || CURRENT_USER),
+      verb: 'moved',
+      target: job.title,
+      connector: 'to',
+      chip: { label: step.label, variant: step.id },
+      time: steps[step.id],
+    }))
+    .reverse();
+
+  return [
+    ...entries,
+    {
+      id: 'seed-created',
+      actor: shortName(job.createdBy || CURRENT_USER),
+      verb: 'created',
+      target: job.title || 'this job',
+      ...(job.createdAt ? { time: job.createdAt } : { at: Date.now() }),
+    },
+  ];
 };
 
 const withRelations = (job) => ({
   ...job,
-  activity: activityTemplate.map((entry) => ({
-    ...entry,
-    actor: entry.actor ?? shortName(job.customer),
-  })),
+  activity: job.activity ?? seedActivity(job),
 });
 
 /* ── Seed data (from the Figma jobs table) ─────────────── */
@@ -145,8 +188,108 @@ export const addJob = (input) => {
   return job;
 };
 
-export const updateJob = (id, patch) => {
-  commit(jobs.map((job) => (job.id === id ? { ...job, ...patch } : job)));
+/* ── Activity logging ──────────────────────────────────── */
+
+let activitySeq = 0;
+
+/** Prepends an entry to a job's feed. Returns the updated job. */
+const withActivity = (job, entry) => ({
+  ...job,
+  activity: [
+    { id: `live-${Date.now()}-${(activitySeq += 1)}`, at: Date.now(), ...entry },
+    ...(job.activity ?? []),
+  ].slice(0, ACTIVITY_LIMIT),
+});
+
+/** Fields worth naming individually; anything else folds into "updated details". */
+const FIELD_LABELS = {
+  title: 'title',
+  description: 'description',
+  location: 'location',
+  type: 'type',
+  date: 'date',
+  time: 'time',
+  budgetTotal: 'budget',
+  budgetSpent: 'budget',
+  revenue: 'revenue',
+  progress: 'progress',
+};
+
+/**
+ * Turns a patch into feed entries by diffing it against the previous record —
+ * so every mutator in the app produces activity without extra call sites.
+ */
+const describeChanges = (before, patch, actor) => {
+  const entries = [];
+  const title = patch.title ?? before.title;
+
+  if (patch.status && patch.status !== before.status) {
+    entries.push({
+      actor,
+      verb: 'changed',
+      target: title,
+      connector: 'to',
+      chip: { label: statusLabel(patch.status), variant: patch.status },
+    });
+  }
+
+  if (patch.priority && patch.priority !== before.priority) {
+    entries.push({
+      actor,
+      verb: 'set',
+      target: title,
+      connector: 'priority to',
+      chip: { label: priorityLabel(patch.priority), variant: patch.priority },
+    });
+  }
+
+  if (patch.technician && patch.technician !== before.technician) {
+    entries.push({ actor, verb: 'assigned', target: title, connector: `to ${patch.technician}` });
+  }
+
+  if (patch.notes) {
+    const changed = Object.keys(patch.notes).filter(
+      (step) => patch.notes[step] && patch.notes[step] !== before.notes?.[step],
+    );
+    changed.forEach((step) => {
+      const label = JOB_TIMELINE.find((item) => item.id === step)?.label ?? step;
+      entries.push({ actor, verb: 'added a note on', target: label });
+    });
+  }
+
+  const fields = Object.keys(patch)
+    .filter((key) => FIELD_LABELS[key] && patch[key] !== before[key])
+    .map((key) => FIELD_LABELS[key]);
+  const unique = [...new Set(fields)];
+  if (unique.length) {
+    entries.push({
+      actor,
+      verb: 'updated',
+      target: title,
+      connector: unique.length > 2 ? 'details' : unique.join(' and '),
+    });
+  }
+
+  return entries;
+};
+
+/**
+ * Applies a patch and records what changed. Pass `actor` when the change comes
+ * from someone other than the signed-in user.
+ */
+export const updateJob = (id, patch, actor = shortName(CURRENT_USER)) => {
+  commit(
+    jobs.map((job) => {
+      if (job.id !== id) return job;
+      const next = { ...job, ...patch };
+      return describeChanges(job, patch, actor).reduce(withActivity, next);
+    }),
+  );
+};
+
+/** Escape hatch for events the diff can't see — photo uploads, messages, etc. */
+export const logJobActivity = (id, entry) => {
+  commit(jobs.map((job) => (job.id === id ? withActivity(job, entry) : job)));
 };
 
 export const setJobStatus = (id, status) => updateJob(id, { status });

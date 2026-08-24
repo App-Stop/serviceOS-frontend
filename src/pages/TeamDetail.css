@@ -1,0 +1,166 @@
+@reference '../index.css';
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.team-detail__content {
+  @apply flex flex-col gap-5 w-full;
+}
+
+.team-detail__missing {
+  @apply flex flex-col items-center justify-center gap-4 py-20 text-center;
+}
+
+/* ── Header ────────────────────────────────────────────── */
+
+.team-detail__header {
+  @apply flex items-end justify-between gap-5 w-full;
+}
+
+.team-detail__profile {
+  @apply flex flex-col gap-2.5 items-start;
+}
+
+.team-detail__avatar-lg {
+  @apply flex items-center justify-center size-[60px] rounded-full bg-neutral-200 text-2xl font-medium text-black-200;
+}
+
+.team-detail__name {
+  @apply text-[32px] font-semibold leading-tight text-neutral-900;
+}
+
+.team-detail__subtitle {
+  @apply text-sm font-normal text-black-200;
+}
+
+/* ── Metric Cards ──────────────────────────────────────── */
+
+.team-detail__metrics {
+  @apply grid gap-5 w-full;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.team-detail__metric-card {
+  @apply flex flex-col gap-5 p-4 rounded-[30px] bg-white border border-neutral-200;
+}
+
+.team-detail__metric-icon {
+  @apply flex items-center justify-center size-11 rounded-full bg-neutral-200 text-neutral-900;
+}
+
+.team-detail__metric-value {
+  @apply flex items-center gap-1 text-[32px] font-semibold text-neutral-900 leading-tight;
+}
+
+.team-detail__metric-label {
+  @apply text-sm font-normal text-black-200;
+}
+
+/* ── Content Grid ──────────────────────────────────────── */
+
+.team-detail__grid {
+  @apply grid gap-5 w-full items-start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.team-detail__card {
+  @apply flex flex-col gap-5 p-4 rounded-[30px] bg-white border border-neutral-200;
+}
+
+.team-detail__card-header {
+  @apply flex items-center justify-between h-8 w-full;
+}
+
+.team-detail__card-title {
+  @apply text-base font-medium text-neutral-900;
+}
+
+/* ── Job History ───────────────────────────────────────── */
+
+.team-detail__job-list {
+  @apply flex flex-col gap-5 w-full;
+}
+
+.team-detail__job-item {
+  @apply flex items-center justify-between w-full;
+}
+
+.team-detail__job-info {
+  @apply flex flex-col gap-1.5 items-start min-w-0;
+}
+
+.team-detail__job-title-row {
+  @apply flex items-center gap-1.5 min-w-0;
+}
+
+.team-detail__job-title {
+  @apply text-sm font-medium text-neutral-900 truncate;
+}
+
+.team-detail__job-assignee {
+  @apply flex items-center gap-1 text-xs font-normal text-black-200;
+}
+
+.team-detail__job-date {
+  @apply flex flex-col items-end text-right text-sm font-medium text-neutral-900 whitespace-nowrap;
+}
+
+.team-detail__job-time {
+  @apply text-xs font-normal text-black-200;
+}
+
+/* ── Member Info Grid ──────────────────────────────────── */
+
+.team-detail__info-grid {
+  @apply grid gap-4 w-full;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.team-detail__info-field {
+  @apply flex flex-col gap-1 items-start min-w-0;
+}
+
+.team-detail__info-label {
+  @apply text-xs font-normal text-black-200;
+}
+
+.team-detail__info-value {
+  @apply text-sm font-medium text-neutral-900 truncate;
+}
+
+/* ── Activity Feed ─────────────────────────────────────── */
+
+.team-detail__activity-list {
+  @apply flex flex-col gap-4 w-full;
+}
+
+.team-detail__activity-item {
+  @apply flex items-center gap-2.5 w-full;
+}
+
+.team-detail__activity-icon {
+  @apply flex items-center justify-center size-10 rounded-full shrink-0;
+}
+
+.team-detail__activity-icon--in {
+  @apply bg-success-light text-success;
+}
+
+.team-detail__activity-icon--out {
+  @apply bg-error-light text-error;
+}
+
+.team-detail__activity-icon--check {
+  @apply bg-blue-light text-blue;
+}
+
+.team-detail__activity-body {
+  @apply flex flex-col gap-1 items-start min-w-0 flex-1;
+}
+
+.team-detail__activity-text {
+  @apply text-sm font-medium text-neutral-900 truncate w-full;
+}
+
+.team-detail__activity-time {
+  @apply text-xs font-normal text-black-200;
+}

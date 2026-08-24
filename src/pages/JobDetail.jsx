@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Wallet, DollarSign, Clock, Pencil, Send } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
@@ -15,6 +15,7 @@ import {
   formatBudget,
   priorityLabel,
   JOB_TIMELINE,
+  activityTime,
 } from '../data/jobs';
 import { initials, formatCurrency } from '../data/customers';
 import david from '../assets/avatars/david.png';
@@ -44,6 +45,13 @@ const JobDetail = () => {
   const navigate = useNavigate();
   const job = useJob(id);
   const [editing, setEditing] = useState(false);
+
+  // Re-render once a minute so the activity feed's relative times stay honest.
+  const [, tick] = useState(0);
+  useEffect(() => {
+    const timer = window.setInterval(() => tick((n) => n + 1), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   if (!job) {
     return (
@@ -161,7 +169,7 @@ const JobDetail = () => {
                 <span className="card__title">Recent Activity</span>
               </div>
               <div className="activity__list">
-                {job.activity.map((entry) => (
+                {(job.activity ?? []).map((entry) => (
                   <div key={entry.id} className="activity__item">
                     <span className="avatar-initials avatar-initials--lg">
                       {initials(entry.actor)}
@@ -187,7 +195,7 @@ const JobDetail = () => {
                           ))}
                         </span>
                       )}
-                      <span className="activity__time">{entry.time}</span>
+                      <span className="activity__time">{activityTime(entry)}</span>
                     </div>
                   </div>
                 ))}

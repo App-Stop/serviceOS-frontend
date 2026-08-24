@@ -1,0 +1,6 @@
+@reference '../index.css';
+
+/* Portalled floating panel — positioned inline from the anchor's rect. */
+.popover {
+  @apply fixed z-50;
+}

@@ -1,0 +1,151 @@
+@reference '../index.css';
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.team__body {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+/* ── Toolbar ───────────────────────────────────────────── */
+
+.team__toolbar {
+  @apply flex items-center justify-between gap-5 w-full;
+}
+
+.team__toolbar-lead {
+  @apply flex items-center gap-5;
+}
+
+.team__search {
+  @apply flex items-center gap-md shrink-0 w-[260px] px-[14px] py-2.5 rounded-[30px] bg-neutral-50 border border-neutral-200;
+}
+
+.team__search-icon {
+  @apply shrink-0 text-black-200;
+}
+
+.team__search-input {
+  @apply flex-1 min-w-0 bg-transparent text-sm font-normal leading-6 text-neutral-900 outline-none;
+}
+
+.team__search-input::placeholder {
+  @apply text-black-200;
+}
+
+.team__tabs {
+  @apply flex items-center gap-2.5;
+}
+
+/* ── Table ─────────────────────────────────────────────── */
+
+.team__table-wrap {
+  @apply w-full overflow-auto rounded-[30px] bg-neutral-50;
+  max-height: 764px;
+}
+
+.team__table {
+  @apply w-full border-collapse;
+  table-layout: fixed;
+  min-width: 1000px;
+}
+
+.team__table th {
+  @apply sticky top-0 z-10 h-12 px-4 text-left align-middle bg-neutral-50 border-b border-neutral-200 text-sm font-medium text-black-200 whitespace-nowrap;
+}
+
+.team__table td {
+  @apply h-[72px] px-4 align-middle border-b border-neutral-200 text-sm font-medium text-neutral-900;
+}
+
+.team__row {
+  @apply transition-colors;
+}
+
+.team__row:hover td {
+  @apply bg-neutral-100;
+}
+
+.team__person {
+  @apply flex items-center gap-2.5 min-w-0;
+}
+
+.team__person-name {
+  @apply min-w-0 truncate leading-6;
+}
+
+.team__crew-badge {
+  @apply flex items-center gap-2 text-sm font-medium text-neutral-900;
+}
+
+.team__crew-dot {
+  @apply size-2 shrink-0 rounded-full;
+}
+
+.team__status-chip {
+  @apply inline-flex items-center justify-center px-2 py-1 rounded-[20px] text-xs font-medium text-center whitespace-nowrap;
+}
+
+.team__status-chip--assigned {
+  @apply bg-success-light text-success;
+}
+
+.team__status-chip--unassigned {
+  @apply bg-neutral-200 text-black-200;
+}
+
+.team__actions {
+  @apply flex items-center justify-end gap-2;
+}
+
+.team__action-btn {
+  @apply flex items-center justify-center size-8 rounded-full text-black-200 hover:text-neutral-900 hover:bg-neutral-200 transition-colors;
+}
+
+.team__action-btn--danger:hover {
+  @apply text-error bg-error-light;
+}
+
+.team__empty {
+  @apply h-[72px] px-4 text-center text-sm font-normal text-black-200;
+}
+
+/* Column widths */
+.team__col--id {
+  width: 80px;
+}
+
+.team__col--name {
+  width: 200px;
+}
+
+.team__col--phone {
+  width: 160px;
+}
+
+.team__col--role {
+  width: 160px;
+}
+
+.team__col--email {
+  width: 220px;
+}
+
+.team__col--crew {
+  width: 160px;
+}
+
+.team__col--job {
+  width: 220px;
+}
+
+.team__col--members {
+  width: 120px;
+}
+
+.team__col--status {
+  width: 130px;
+}
+
+.team__col--actions {
+  width: 100px;
+}

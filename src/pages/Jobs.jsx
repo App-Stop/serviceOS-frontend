@@ -12,6 +12,7 @@ import { AppShell } from '../components/AppShell';
 import { JobStatusChip, JobPriorityBadge } from '../components/JobStatusChip';
 import { JobTimeline } from '../components/JobTimeline';
 import { JobFormModal } from '../components/JobFormModal';
+import { FilterDropdown } from '../components/FilterDropdown';
 import {
   useJobs,
   addJob,
@@ -19,7 +20,6 @@ import {
   setJobStatus,
   setJobPriority,
   formatBudget,
-  JOB_STATUSES,
 } from '../data/jobs';
 import { initials, formatCurrency } from '../data/customers';
 import david from '../assets/avatars/david.png';
@@ -28,18 +28,44 @@ import './Jobs.css';
 
 const photos = { david };
 
+/* Filter option lists, matching the Figma dropdowns. The status dot colours
+   come straight from the design; each entry maps to a status id in the store. */
+
 const ranges = [
-  { id: 'week', label: 'This Week' },
-  { id: 'month', label: 'This Month' },
-  { id: 'all', label: 'All Time' },
+  { id: 'week', label: 'This Week', days: 7 },
+  { id: 'month', label: 'This Month', days: 31 },
+  { id: 'quarter', label: 'Last 3 month', days: 92 },
+  { id: 'year', label: 'This year', days: 366 },
+  { id: 'custom', label: 'Custom', days: Infinity },
 ];
 
-/** Rough range filter over the seeded "Aug 12, 2026"-style dates. */
-const inRange = (job, range) => {
-  if (range === 'all') return true;
-  const day = Number(job.date.split(' ')[1]?.replace(',', ''));
-  if (Number.isNaN(day)) return true;
-  return range === 'week' ? day <= 16 : true;
+const statusFilters = [
+  { id: 'all', label: 'All' },
+  { id: 'scheduled', label: 'Scheduled', dot: '#f96c00' },
+  { id: 'dispatched', label: 'Dispatched', dot: '#903bff' },
+  { id: 'enroute', label: 'En Route', dot: '#edba00' },
+  { id: 'onsite', label: 'In Progress', dot: '#0095ff' },
+  { id: 'completed', label: 'Completed', dot: '#00c064' },
+  { id: 'cancelled', label: 'Cancelled', dot: '#f30000' },
+];
+
+const parseDate = (value) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+const DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Windows the list by schedule date. The seeded jobs are all dated in the
+ * future, so the window is measured from the earliest job on file rather than
+ * from today — that keeps every option meaningful against the sample data.
+ */
+const withinRange = (job, range, anchor) => {
+  const span = ranges.find((option) => option.id === range)?.days ?? Infinity;
+  if (span === Infinity || !anchor) return true;
+  const date = parseDate(job.date);
+  return date ? (date - anchor) / DAY <= span : true;
 };
 
 const Jobs = () => {
@@ -54,6 +80,11 @@ const Jobs = () => {
 
   const visible = useMemo(() => {
     const term = query.trim().toLowerCase();
+    const anchor = jobs
+      .map((job) => parseDate(job.date))
+      .filter(Boolean)
+      .sort((a, b) => a - b)[0];
+
     return jobs.filter((job) => {
       const matchesStatus = status === 'all' || job.status === status;
       const matchesTerm =
@@ -61,7 +92,7 @@ const Jobs = () => {
         job.title.toLowerCase().includes(term) ||
         job.customer.toLowerCase().includes(term) ||
         job.technician.toLowerCase().includes(term);
-      return matchesStatus && matchesTerm && inRange(job, range);
+      return matchesStatus && matchesTerm && withinRange(job, range, anchor);
     });
   }, [jobs, query, status, range]);
 
@@ -89,36 +120,18 @@ const Jobs = () => {
               </div>
 
               <div className="jobs__filters">
-                <div className="jobs__select">
-                  <select
-                    value={range}
-                    onChange={(event) => setRange(event.target.value)}
-                    aria-label="Date range"
-                  >
-                    {ranges.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="jobs__select-caret" size={16} strokeWidth={2} />
-                </div>
-
-                <div className="jobs__select">
-                  <select
-                    value={status}
-                    onChange={(event) => setStatus(event.target.value)}
-                    aria-label="Status"
-                  >
-                    <option value="all">Status</option>
-                    {JOB_STATUSES.map((option) => (
-                      <option key={option.id} value={option.id}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="jobs__select-caret" size={16} strokeWidth={2} />
-                </div>
+                <FilterDropdown
+                  label="Date range"
+                  value={range}
+                  options={ranges}
+                  onChange={setRange}
+                />
+                <FilterDropdown
+                  label="Status"
+                  value={status}
+                  options={statusFilters}
+                  onChange={setStatus}
+                />
               </div>
             </div>
 
