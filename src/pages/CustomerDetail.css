@@ -57,3 +57,30 @@
 .customer-detail__missing {
   @apply flex flex-col gap-2.5 items-start;
 }
+
+/* ── Responsive Overrides ──────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .customer-detail__row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .customer-detail__row--stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .customer-detail__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .customer-detail__row--stats {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}

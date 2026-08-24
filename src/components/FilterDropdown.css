@@ -52,3 +52,21 @@
 .filter-dropdown__check {
   @apply shrink-0 text-neutral-900;
 }
+
+/* ── Full width variant for forms & modals ─────────────── */
+
+.filter-dropdown--full {
+  @apply w-full;
+}
+
+.filter-dropdown--full .filter-dropdown__trigger {
+  @apply w-full justify-between;
+}
+
+.filter-dropdown--full .filter-dropdown__menu {
+  @apply w-full min-w-full max-h-60 overflow-y-auto z-50;
+}
+
+.filter-dropdown--full .filter-dropdown__option {
+  @apply w-full;
+}

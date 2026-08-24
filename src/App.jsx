@@ -14,6 +14,7 @@ import InvoiceBuilder from './pages/InvoiceBuilder'
 import InvoiceDetail from './pages/InvoiceDetail'
 import Team from './pages/Team'
 import TeamDetail from './pages/TeamDetail'
+import Communications from './pages/Communications'
 
 const App = () => {
   return (
@@ -32,6 +33,7 @@ const App = () => {
       <Route path='/invoices/:id/edit' element={<InvoiceBuilder />} />
       <Route path='/invoices/:id' element={<InvoiceDetail />} />
       <Route path='/onboarding' element={<Onboarding />} />
+      <Route path='/communication' element={<Communications />} />
       <Route path='/team' element={<Team />} />
       <Route path='/team/:id' element={<TeamDetail />} />
     </Routes>

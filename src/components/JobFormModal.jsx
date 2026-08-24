@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { InputGroup } from './InputGroup';
+import { FilterDropdown } from './FilterDropdown';
 import { JOB_STATUSES, JOB_PRIORITIES } from '../data/jobs';
 import { useCustomers } from '../data/customers';
 import './FormModal.css';
@@ -17,17 +18,27 @@ const emptyJob = {
   priority: 'normal',
 };
 
-/**
- * Create / edit a job. Used by the jobs list ("New Job" and the expanded
- * row's Edit action) and by the job detail screen, which is why it takes a
- * partial record and hands the patch back through `onSave`.
- */
 export const JobFormModal = ({ job, onSave, onClose }) => {
   const customers = useCustomers();
   const [form, setForm] = useState(() => ({ ...emptyJob, ...job }));
 
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
   const canSave = Boolean(form.title.trim() && form.customer);
+
+  const customerOptions = useMemo(
+    () => customers.map((c) => ({ id: c.name, label: c.name })),
+    [customers],
+  );
+
+  const statusOptions = useMemo(
+    () => JOB_STATUSES.map((s) => ({ id: s.id, label: s.label, dot: s.dot })),
+    [],
+  );
+
+  const priorityOptions = useMemo(
+    () => JOB_PRIORITIES.map((p) => ({ id: p.id, label: p.label })),
+    [],
+  );
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -76,22 +87,14 @@ export const JobFormModal = ({ job, onSave, onClose }) => {
 
           <div className="form-modal__row">
             <div className="input-group">
-              <label className="field-label" htmlFor="job-customer">
-                Customer*
-              </label>
-              <select
-                id="job-customer"
-                className="field-input"
+              <label className="field-label">Customer*</label>
+              <FilterDropdown
+                label="Select a customer"
                 value={form.customer}
-                onChange={(event) => update({ customer: event.target.value })}
-              >
-                <option value="">Select a customer</option>
-                {customers.map((customer) => (
-                  <option key={customer.id} value={customer.name}>
-                    {customer.name}
-                  </option>
-                ))}
-              </select>
+                options={customerOptions}
+                onChange={(customer) => update({ customer })}
+                fullWidth
+              />
             </div>
 
             <InputGroup
@@ -119,39 +122,25 @@ export const JobFormModal = ({ job, onSave, onClose }) => {
 
           <div className="form-modal__row">
             <div className="input-group">
-              <label className="field-label" htmlFor="job-status">
-                Status
-              </label>
-              <select
-                id="job-status"
-                className="field-input"
+              <label className="field-label">Status</label>
+              <FilterDropdown
+                label="Select status"
                 value={form.status}
-                onChange={(event) => update({ status: event.target.value })}
-              >
-                {JOB_STATUSES.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                options={statusOptions}
+                onChange={(status) => update({ status })}
+                fullWidth
+              />
             </div>
 
             <div className="input-group">
-              <label className="field-label" htmlFor="job-priority">
-                Priority
-              </label>
-              <select
-                id="job-priority"
-                className="field-input"
+              <label className="field-label">Priority</label>
+              <FilterDropdown
+                label="Select priority"
                 value={form.priority}
-                onChange={(event) => update({ priority: event.target.value })}
-              >
-                {JOB_PRIORITIES.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+                options={priorityOptions}
+                onChange={(priority) => update({ priority })}
+                fullWidth
+              />
             </div>
           </div>
 

@@ -26,7 +26,7 @@ const navItems = [
   { name: 'Report', path: '/reports', icon: ChartColumn },
 ];
 
-export const Sidebar = ({ collapsed = false }) => {
+export const Sidebar = ({ collapsed = false, onMobileSelect }) => {
   return (
     <aside className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}`}>
       <div className="sidebar__top">
@@ -41,6 +41,7 @@ export const Sidebar = ({ collapsed = false }) => {
               to={path}
               end={path === '/'}
               title={collapsed ? name : undefined}
+              onClick={() => onMobileSelect?.()}
               className={({ isActive }) =>
                 `sidebar__link${isActive ? ' sidebar__link--active' : ''}`
               }

@@ -19,6 +19,7 @@ import { useTeamMembers, useCrews } from './team';
 
 export * from './customers';
 export * from './team';
+export * from './communications';
 
 export {
   JOB_STATUSES,

@@ -19,3 +19,9 @@
 .invoice-builder__actions .cta-button:disabled .cta-button__glow {
   @apply hidden;
 }
+
+@media (max-width: 639px) {
+  .invoice-builder__actions {
+    gap: 0.5rem;
+  }
+}

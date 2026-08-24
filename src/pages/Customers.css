@@ -110,3 +110,25 @@
   width: 130px;
 }
 
+/* ── Responsive Overrides ──────────────────────────────── */
+
+@media (max-width: 767px) {
+  .customers__toolbar,
+  .customers__toolbar-lead {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .customers__search {
+    width: 100% !important;
+  }
+
+  .customers__filters {
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    max-width: 100%;
+  }
+}
+

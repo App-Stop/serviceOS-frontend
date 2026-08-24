@@ -24,8 +24,25 @@
   @apply flex items-center gap-5;
 }
 
-/* ── Page content column ───────────────────────────────── */
-
 .app-shell__content {
   @apply flex flex-col gap-5 items-start w-full;
 }
+
+.app-shell__overlay {
+  @apply fixed inset-0 z-40 bg-neutral-900/60 backdrop-blur-xs transition-opacity lg:hidden;
+}
+
+@media (max-width: 1023px) {
+  .app-shell {
+    @apply p-2 gap-0;
+  }
+
+  .app-shell__main {
+    @apply pt-2 w-full min-w-0;
+  }
+
+  .app-shell__topbar {
+    @apply gap-3 flex-wrap sm:flex-nowrap;
+  }
+}
+

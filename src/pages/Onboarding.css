@@ -389,3 +389,34 @@
 .onb-field-block {
   @apply flex flex-col items-start gap-[10px];
 }
+
+/* ── Mobile Responsive Overrides ───────────────────────── */
+
+@media (max-width: 639px) {
+  .onb-card {
+    padding: 1rem 1rem 1.5rem 1rem;
+    border-radius: 1.5rem;
+  }
+
+  .onb-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .onb-summary-row {
+    flex-direction: column;
+  }
+
+  .onb-summary-tile-half {
+    width: 100%;
+  }
+
+  .onb-service-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .onb-service-time {
+    width: 100%;
+  }
+}

@@ -497,3 +497,28 @@
 .invoice-chip--overdue {
   @apply bg-error-light text-error;
 }
+
+/* ── Mobile Responsive Overrides ───────────────────────── */
+
+@media (max-width: 767px) {
+  .page-title__heading {
+    @apply text-2xl;
+  }
+
+  .stat-card__value {
+    @apply text-2xl;
+  }
+
+  .cta-button {
+    @apply h-10 px-4 text-xs;
+  }
+
+  .ghost-button {
+    @apply h-10 px-4 text-xs;
+  }
+
+  .card {
+    @apply p-3.5;
+  }
+}
+

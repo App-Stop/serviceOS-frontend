@@ -136,3 +136,25 @@
 .search-modal__hint-label {
   @apply text-xs font-normal text-black-200 whitespace-nowrap;
 }
+
+/* ── Mobile Responsive Overrides ───────────────────────── */
+
+@media (max-width: 639px) {
+  .search-modal__overlay {
+    padding: 1rem;
+    padding-top: 2rem;
+  }
+
+  .search-modal {
+    padding: 1rem;
+    border-radius: 1.25rem;
+  }
+
+  .search-modal__input {
+    font-size: 1.125rem;
+  }
+
+  .search-modal__hints {
+    display: none;
+  }
+}

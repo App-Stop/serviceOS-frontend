@@ -97,3 +97,39 @@
 .sidebar--collapsed .sidebar__profile {
   @apply justify-center px-0;
 }
+
+/* ── Mobile & Tablet Drawer ────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .sidebar {
+    @apply fixed inset-y-0 left-0 z-50 h-screen rounded-r-[30px] rounded-l-none shadow-2xl;
+    width: 260px !important;
+    top: 0 !important;
+    transform: translateX(0);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar--collapsed {
+    transform: translateX(-100%);
+  }
+
+  .sidebar--collapsed .sidebar__label,
+  .sidebar--collapsed .sidebar__profile-meta {
+    display: flex !important;
+  }
+
+  .sidebar--collapsed .sidebar__brand {
+    justify-content: space-between !important;
+    padding: 0.625rem !important;
+  }
+
+  .sidebar--collapsed .sidebar__link {
+    justify-content: flex-start !important;
+    padding: 0.625rem 1rem !important;
+  }
+
+  .sidebar--collapsed .sidebar__profile {
+    justify-content: flex-start !important;
+    padding: 0.625rem !important;
+  }
+}

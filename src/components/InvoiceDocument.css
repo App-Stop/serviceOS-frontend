@@ -203,3 +203,39 @@
 .invoice-doc > *:not(.invoice-doc__watermark) {
   @apply relative z-10;
 }
+
+/* ── Mobile Responsive Overrides ───────────────────────── */
+
+@media (max-width: 639px) {
+  .invoice-doc {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-radius: 1.25rem;
+  }
+
+  .invoice-doc__section,
+  .invoice-doc__items-head,
+  .invoice-doc__row,
+  .invoice-doc__summary {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .invoice-doc__grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .invoice-doc__cell {
+    width: 48px;
+    gap: 0.25rem;
+  }
+
+  .invoice-doc__totals {
+    width: 100%;
+  }
+
+  .invoice-doc__summary {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+}

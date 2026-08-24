@@ -1,0 +1,228 @@
+@reference '../index.css';
+
+/* ── Layout ────────────────────────────────────────────── */
+
+.comm__body {
+  @apply flex flex-col gap-5 items-start w-full;
+}
+
+/* ── Toolbar ───────────────────────────────────────────── */
+
+.comm__toolbar {
+  @apply flex items-center justify-between gap-5 w-full;
+}
+
+.comm__toolbar-lead {
+  @apply flex items-center gap-5;
+}
+
+.comm__search {
+  @apply flex items-center gap-md shrink-0 w-[260px] px-[14px] py-2.5 rounded-[30px] bg-neutral-50 border border-neutral-200;
+}
+
+.comm__search-icon {
+  @apply shrink-0 text-black-200;
+}
+
+.comm__search-input {
+  @apply flex-1 min-w-0 bg-transparent text-sm font-normal leading-6 text-neutral-900 outline-none;
+}
+
+.comm__search-input::placeholder {
+  @apply text-black-200;
+}
+
+.comm__filters {
+  @apply flex items-center gap-2.5;
+}
+
+/* ── Split Layout ──────────────────────────────────────── */
+
+.comm__split {
+  @apply flex gap-5 items-start w-full;
+}
+
+/* ── Table ─────────────────────────────────────────────── */
+
+.comm__table-wrap {
+  @apply flex-1 min-w-0 overflow-auto rounded-[30px] bg-neutral-50;
+  max-height: 764px;
+}
+
+.comm__table {
+  @apply w-full border-collapse;
+  table-layout: fixed;
+  min-width: 800px;
+}
+
+.comm__table th {
+  @apply sticky top-0 z-10 h-12 px-3.5 text-left align-middle bg-neutral-50 border-b border-neutral-200 text-sm font-medium text-black-200 whitespace-nowrap;
+}
+
+.comm__table td {
+  @apply h-[72px] px-3.5 align-middle border-b border-neutral-200 text-sm font-medium text-neutral-900;
+}
+
+.comm__row {
+  @apply cursor-pointer transition-colors;
+}
+
+.comm__row:hover td {
+  @apply bg-neutral-100;
+}
+
+.comm__type-icon {
+  @apply flex items-center justify-center size-9 rounded-full bg-neutral-100 text-neutral-900 mx-auto;
+}
+
+.comm__recipient {
+  @apply flex flex-col justify-center min-w-0;
+}
+
+.comm__recipient-name {
+  @apply font-medium text-neutral-900 truncate text-sm leading-6;
+}
+
+.comm__recipient-contact {
+  @apply font-normal text-xs text-black-200 truncate;
+}
+
+.comm__job-title {
+  @apply font-medium text-neutral-900 truncate text-sm;
+}
+
+.comm__subject-text {
+  @apply font-medium text-neutral-900 truncate text-sm;
+}
+
+.comm__timestamp {
+  @apply flex flex-col justify-center min-w-0 text-sm font-medium text-neutral-900;
+}
+
+.comm__timestamp-full {
+  @apply text-xs font-normal text-black-200 truncate;
+}
+
+.comm__empty {
+  @apply h-[72px] px-4 text-center text-sm font-normal text-black-200;
+}
+
+/* Column widths */
+.comm__col--type {
+  width: 60px;
+}
+
+.comm__col--recipient {
+  width: 180px;
+}
+
+.comm__col--job {
+  width: 200px;
+}
+
+.comm__col--subject {
+  width: auto;
+}
+
+.comm__col--sent {
+  width: 140px;
+}
+
+.comm__col--status {
+  width: 100px;
+}
+
+/* ── Auto Alerts Side Panel ────────────────────────────── */
+
+.comm__alerts-panel {
+  @apply flex flex-col gap-5 p-4 rounded-[30px] bg-white border border-neutral-200 shrink-0 w-[360px];
+}
+
+.comm__alerts-header {
+  @apply flex flex-col gap-1 w-full;
+}
+
+.comm__alerts-title {
+  @apply text-base font-medium text-neutral-900;
+}
+
+.comm__alerts-subtitle {
+  @apply text-sm font-normal text-black-200;
+}
+
+.comm__alerts-list {
+  @apply flex flex-col gap-4 w-full;
+}
+
+.comm__alert-item {
+  @apply flex items-center justify-between gap-3 w-full p-2.5 rounded-[20px] bg-neutral-50 border border-neutral-200;
+}
+
+.comm__alert-info {
+  @apply flex flex-col gap-0.5 items-start min-w-0;
+}
+
+.comm__alert-label {
+  @apply text-sm font-medium text-neutral-900 truncate;
+}
+
+.comm__alert-channel {
+  @apply text-xs font-normal text-black-200 uppercase;
+}
+
+/* Custom toggle switch matching node 103:1855 */
+.comm__toggle {
+  @apply relative flex items-center shrink-0 w-[44px] h-[26px] p-1 rounded-full border transition-colors cursor-pointer;
+}
+
+.comm__toggle--on {
+  @apply bg-primary border-transparent justify-end;
+}
+
+.comm__toggle--off {
+  @apply bg-white border-neutral-200 justify-start;
+}
+
+.comm__toggle-knob {
+  @apply size-4 rounded-full transition-all;
+}
+
+.comm__toggle--on .comm__toggle-knob {
+  @apply bg-white;
+}
+
+.comm__toggle--off .comm__toggle-knob {
+  @apply bg-neutral-900;
+}
+
+/* ── Responsive Overrides ──────────────────────────────── */
+
+@media (max-width: 1023px) {
+  .comm__split {
+    flex-direction: column;
+  }
+
+  .comm__alerts-panel {
+    width: 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .comm__toolbar,
+  .comm__toolbar-lead {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .comm__search {
+    width: 100% !important;
+  }
+
+  .comm__filters {
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    max-width: 100%;
+  }
+}

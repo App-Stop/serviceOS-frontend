@@ -40,3 +40,72 @@
 .form-modal__actions {
   @apply flex items-center gap-2.5;
 }
+
+/* ── Modal Input & Dropdown Styling ────────────────────── */
+
+.form-modal input[type='text'],
+.form-modal input[type='email'],
+.form-modal input[type='tel'],
+.form-modal input[type='number'],
+.form-modal select,
+.form-modal textarea {
+  padding-left: 14px;
+  padding-right: 14px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 30px;
+  font-size: 14px;
+  color: #111111;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-modal input:focus,
+.form-modal select:focus,
+.form-modal textarea:focus {
+  border-color: #111111;
+}
+
+.form-modal select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 38px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23111111' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+}
+
+.form-modal select option {
+  background-color: #ffffff;
+  color: #111111;
+  padding: 8px 12px;
+}
+
+.form-modal textarea {
+  padding: 12px 14px;
+}
+
+/* ── Mobile Responsive Overrides ───────────────────────── */
+
+@media (max-width: 639px) {
+  .form-modal__overlay {
+    padding: 0.75rem;
+  }
+
+  .form-modal {
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+    max-height: 90vh;
+  }
+
+  .form-modal__row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}

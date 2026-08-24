@@ -1,23 +1,53 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { DollarSign } from 'lucide-react';
 import { InputGroup } from './InputGroup';
-import { Select } from './onboarding/WizardControls';
+import { FilterDropdown } from './FilterDropdown';
+import { useCrews } from '../data';
 
-const ROLES = ['Admin', 'Dispatcher', 'Technician'];
+const CREW_COLOR_MAP = {
+  pink: '#ff1fad',
+  green: '#00c064',
+  cyan: '#00c9c6',
+  blue: '#0095ff',
+  violet: '#903bff',
+  orange: '#f96c00',
+  red: '#f30000',
+  yellow: '#edba00',
+};
+
+const ROLE_OPTIONS = [
+  { id: 'Admin', label: 'Admin' },
+  { id: 'Dispatcher', label: 'Dispatcher' },
+  { id: 'Technician', label: 'Technician' },
+  { id: 'Lead Technician', label: 'Lead Technician' },
+];
 
 const emptyMember = { name: '', phone: '', email: '', role: 'Technician', rate: '', crew: '' };
 
 /**
  * Add / edit a team member. Rendered as an overlay dialog from the onboarding
- * wizard; `member` prefills the form when editing an existing invitee.
+ * wizard or Team page.
  */
 export const AddMemberModal = ({ member, crews = [], onSave, onClose }) => {
-  // Mounted fresh per open (keyed by member id at the call site), so the
-  // incoming member is a safe one-time initializer.
+  const storeCrews = useCrews();
+  const availableCrews = crews.length > 0 ? crews : storeCrews;
+
   const [form, setForm] = useState(() => ({ ...emptyMember, ...member }));
 
   const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
   const canSave = Boolean(form.name && form.role && form.rate);
+
+  const crewOptions = useMemo(
+    () => [
+      { id: '', label: 'No crew' },
+      ...availableCrews.map((c) => ({
+        id: c.name,
+        label: c.name,
+        dot: CREW_COLOR_MAP[c.color] || c.color || '#6A6A6A',
+      })),
+    ],
+    [availableCrews],
+  );
 
   const handleBackdrop = (e) => {
     if (e.target === e.currentTarget) onClose();
@@ -63,11 +93,12 @@ export const AddMemberModal = ({ member, crews = [], onSave, onClose }) => {
           <div className="onb-modal-row">
             <div className="input-group">
               <span className="field-label">Role*</span>
-              <Select
-                placeholder="Select a role"
-                options={ROLES}
+              <FilterDropdown
+                label="Select a role"
                 value={form.role}
-                onChange={(e) => update({ role: e.target.value })}
+                options={ROLE_OPTIONS}
+                onChange={(role) => update({ role })}
+                fullWidth
               />
             </div>
 
@@ -87,17 +118,16 @@ export const AddMemberModal = ({ member, crews = [], onSave, onClose }) => {
             </div>
           </div>
 
-          {crews.length > 0 && (
-            <div className="input-group">
-              <span className="field-label">Assign to Crew</span>
-              <Select
-                placeholder="No crew"
-                options={crews.map((crew) => crew.name || 'Untitled crew')}
-                value={form.crew}
-                onChange={(e) => update({ crew: e.target.value })}
-              />
-            </div>
-          )}
+          <div className="input-group">
+            <span className="field-label">Assign to Crew</span>
+            <FilterDropdown
+              label="No crew"
+              value={form.crew}
+              options={crewOptions}
+              onChange={(crew) => update({ crew })}
+              fullWidth
+            />
+          </div>
         </div>
 
         <div className="onb-modal-footer">

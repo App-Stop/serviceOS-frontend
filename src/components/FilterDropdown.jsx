@@ -8,7 +8,7 @@ import './FilterDropdown.css';
  *
  * `options`: [{ id, label, dot? }]
  */
-export const FilterDropdown = ({ label, value, options, onChange }) => {
+export const FilterDropdown = ({ label, value, options, onChange, fullWidth = false }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -31,7 +31,7 @@ export const FilterDropdown = ({ label, value, options, onChange }) => {
   const selected = options.find((option) => option.id === value);
 
   return (
-    <div className="filter-dropdown" ref={ref}>
+    <div className={`filter-dropdown${fullWidth ? ' filter-dropdown--full' : ''}`} ref={ref}>
       <button
         type="button"
         className="filter-dropdown__trigger"
@@ -39,7 +39,15 @@ export const FilterDropdown = ({ label, value, options, onChange }) => {
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        {selected?.label ?? label}
+        <span className="filter-dropdown__label">
+          {selected?.dot && (
+            <span
+              className="filter-dropdown__dot"
+              style={{ '--filter-dot-color': selected.dot }}
+            />
+          )}
+          {selected?.label ?? label}
+        </span>
         <ChevronDown className="filter-dropdown__caret" size={16} strokeWidth={2} />
       </button>
 

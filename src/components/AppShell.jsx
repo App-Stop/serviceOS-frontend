@@ -16,7 +16,9 @@ import './AppShell.css';
  */
 export const AppShell = ({ topbarLead, topbarActions, children }) => {
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 1024 : false,
+  );
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
@@ -32,7 +34,18 @@ export const AppShell = ({ topbarLead, topbarActions, children }) => {
 
   return (
     <div className="app-shell">
-      <Sidebar collapsed={collapsed} />
+      {!collapsed && (
+        <div
+          className="app-shell__overlay"
+          onClick={() => setCollapsed(true)}
+          aria-hidden="true"
+        />
+      )}
+
+      <Sidebar
+        collapsed={collapsed}
+        onMobileSelect={() => setCollapsed(true)}
+      />
 
       <main className="app-shell__main">
         <header className="app-shell__topbar">
