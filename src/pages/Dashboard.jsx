@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BriefcaseBusiness, DollarSign, ReceiptText, UserStar } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
 import { StatCard } from '../components/StatCard';
@@ -7,9 +8,25 @@ import { QuickAction } from '../components/QuickAction';
 import { JobsChart } from '../components/JobsChart';
 import { UpcomingJobs } from '../components/UpcomingJobs';
 import { NewCustomers } from '../components/NewCustomers';
+import { JobFormModal } from '../components/JobFormModal';
+import { CustomerFormModal } from '../components/CustomerFormModal';
+import { SendMessageModal } from '../components/SendMessageModal';
+import { addJob } from '../data/jobs';
+import { addCustomer } from '../data/customers';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [activeModal, setActiveModal] = useState(null);
+
+  const handleAction = (actionId) => {
+    if (actionId === 'invoice') {
+      navigate('/invoices/new');
+    } else {
+      setActiveModal(actionId);
+    }
+  };
+
   return (
     <AppShell>
       <div className="app-shell__content">
@@ -29,7 +46,7 @@ const Dashboard = () => {
           <div className="dashboard__row">
             <RecentActivity />
             <div className="dashboard__aside">
-              <QuickAction />
+              <QuickAction onAction={handleAction} />
               <JobsChart />
             </div>
           </div>
@@ -40,6 +57,41 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {activeModal === 'job' && (
+        <JobFormModal
+          onClose={() => setActiveModal(null)}
+          onSave={(values) => {
+            const created = addJob(values);
+            setActiveModal(null);
+            if (created?.id) {
+              navigate(`/jobs/${created.id}`);
+            }
+          }}
+        />
+      )}
+
+      {activeModal === 'customer' && (
+        <CustomerFormModal
+          onClose={() => setActiveModal(null)}
+          onSave={(values) => {
+            const created = addCustomer(values);
+            setActiveModal(null);
+            if (created?.id) {
+              navigate(`/customers/${created.id}`);
+            }
+          }}
+        />
+      )}
+
+      {activeModal === 'message' && (
+        <SendMessageModal
+          onClose={() => setActiveModal(null)}
+          onSend={() => {
+            setActiveModal(null);
+          }}
+        />
+      )}
     </AppShell>
   );
 };
