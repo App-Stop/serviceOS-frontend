@@ -9,6 +9,7 @@ import badgeCheck from '../assets/badge-check.png';
 export const VerifyOtp = () => {
   const [otp, setOtp] = useState('');
   const [isVerified, setIsVerified] = useState(false);
+  const [isFadingOut, setIsFadingOut] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || 'name@company.com';
@@ -17,6 +18,9 @@ export const VerifyOtp = () => {
     e.preventDefault();
     if (otp.length === 4) {
       setIsVerified(true);
+      setTimeout(() => {
+        setIsFadingOut(true);
+      }, 700);
       setTimeout(() => {
         navigate('/welcome');
       }, 1200);
@@ -28,7 +32,7 @@ export const VerifyOtp = () => {
   };
 
   return (
-    <div className="relative bg-primary-light min-h-screen w-full overflow-hidden flex flex-col items-center justify-center p-4">
+    <div className={`relative bg-primary-light min-h-screen w-full overflow-hidden flex flex-col items-center justify-center p-4 transition-opacity duration-500 ease-in-out ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
       {/* Background Fade Image */}
       <img
         src={bgFade}

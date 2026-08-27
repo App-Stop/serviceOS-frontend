@@ -24,6 +24,14 @@
 
 .onb-card {
   @apply flex w-full max-w-[548px] flex-col items-center gap-[30px] rounded-[40px] bg-neutral-50 px-[30px] pt-[16px] pb-[30px] shadow-modal-low;
+  /* Picks up where the welcome content left off: a short drift in from the right. */
+  animation: slideInRight 0.3s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .onb-card {
+    animation-duration: 0.01ms;
+  }
 }
 
 /* ── Progress ──────────────────────────────────────────── */

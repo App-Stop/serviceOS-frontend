@@ -403,11 +403,27 @@
   @apply shrink-0 bg-neutral-200;
   width: 40px;
   height: 1px;
-  margin-top: 26px;
 }
 
+/* The row variant centers the connector via `items-center`. The detail variant
+   aligns to the top and stacks a note button under each card, so the span only
+   reserves the gap — the line itself is drawn off the card so it stays centred
+   on the card whatever its height. */
 .timeline--detail .timeline__connector {
-  margin-top: 80px;
+  @apply bg-transparent;
+}
+
+.timeline--detail .timeline__step {
+  position: relative;
+}
+
+.timeline--detail .timeline__group:not(:last-child) .timeline__step::after {
+  content: '';
+  @apply absolute bg-neutral-200;
+  top: 50%;
+  left: 100%;
+  width: 40px;
+  height: 1px;
 }
 
 .timeline__group {

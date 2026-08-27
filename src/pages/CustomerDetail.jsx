@@ -61,11 +61,7 @@ const CustomerDetail = () => {
             <p className="page-title__subheading">Customer since {customer.since}</p>
           </div>
 
-          <button type="button" className="cta-button">
-            <img className="cta-button__glow" src={glow} alt="" aria-hidden="true" />
-            <Plus size={20} strokeWidth={2} />
-            <span className="cta-button__label">New</span>
-          </button>
+          
         </div>
 
         <div className="customer-detail__grid">

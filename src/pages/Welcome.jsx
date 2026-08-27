@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import bgFadeDark from '../assets/bgFadeDark.svg';
 import rocket from '../assets/rocket.svg';
 import { ArrowRight } from 'lucide-react';
@@ -6,9 +6,17 @@ import { useNavigate } from 'react-router-dom';
 
 export const Welcome = () => {
   const navigate = useNavigate();
+  const [leaving, setLeaving] = useState(false);
+
+  // Drift the content out to the left before handing off to the next route.
+  const leaveTo = (path) => {
+    if (leaving) return;
+    setLeaving(true);
+    setTimeout(() => navigate(path), 230);
+  };
 
   return (
-    <div className="relative bg-primary min-h-screen w-full overflow-hidden">
+    <div className="relative bg-primary min-h-screen w-full overflow-hidden animate-fade-in">
       {/* BG Fade */}
       <div className="absolute left-1/2 top-[calc(50%+273.5px)] h-[811px] w-[1648px] -translate-x-1/2 -translate-y-1/2 pointer-events-none">
         <div className="absolute inset-[-38.23%_-18.81%]">
@@ -16,6 +24,8 @@ export const Welcome = () => {
         </div>
       </div>
 
+      {/* Content layer — drifts out on navigate while the canvas stays put. */}
+      <div className={`absolute inset-0 ${leaving ? 'animate-slide-out-left' : ''}`}>
       {/* Logo */}
       <div className="absolute left-1/2 top-[30px] -translate-x-1/2 flex w-[254px] items-center justify-center p-[10px]">
         <p className="bg-gradient-to-b from-neutral-50 to-neutral-800 bg-clip-text text-[20px] font-semibold leading-[normal] text-transparent whitespace-nowrap">
@@ -48,7 +58,7 @@ export const Welcome = () => {
         <div className="flex flex-col items-center justify-center gap-[20px]">
           <button
             type="button"
-            onClick={() => navigate('/onboarding')}
+            onClick={() => leaveTo('/onboarding')}
             className="flex h-[44px] w-[160px] cursor-pointer items-center justify-center gap-[var(--spacing-sm)] overflow-clip rounded-[100px] border border-neutral-200 bg-neutral-50 px-[var(--spacing-xl)] py-[10px]"
           >
             <span className="flex items-center justify-center px-[var(--spacing-xxs)]">
@@ -61,12 +71,13 @@ export const Welcome = () => {
 
           <button
             type="button"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => leaveTo('/dashboard')}
             className="cursor-pointer overflow-hidden text-ellipsis text-center text-[14px] font-normal leading-[normal] text-neutral-500 whitespace-nowrap"
           >
             Skip for now
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

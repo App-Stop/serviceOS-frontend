@@ -23,6 +23,9 @@ const INDUSTRIES = [
 
 const TEAM_SIZES = ['2-5', '6-15', '16-50', '50+'];
 
+// Keep the phone field to digits and the usual formatting characters.
+const sanitizePhone = (value) => value.replace(/[^0-9+()\-. ]/g, '');
+
 export const StepBusiness = ({ data, update, onNext }) => {
   const canContinue = Boolean(data.company && data.phone && data.email && data.serviceArea);
 
@@ -46,8 +49,9 @@ export const StepBusiness = ({ data, update, onNext }) => {
             required
             type="tel"
             placeholder="(555) 000-0000"
+            inputMode="tel"
             value={data.phone}
-            onChange={(e) => update({ phone: e.target.value })}
+            onChange={(e) => update({ phone: sanitizePhone(e.target.value) })}
           />
         </div>
 
