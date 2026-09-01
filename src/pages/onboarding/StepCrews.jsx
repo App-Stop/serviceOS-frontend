@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pencil, Plus, Trash2, UsersRound } from 'lucide-react';
 import { OnboardingShell } from '../../components/onboarding/OnboardingShell';
 import { CreateCrewModal } from '../../components/createCrewModal';
 import {
   DarkPillButton,
+  ErrorBanner,
   MutedPillButton,
   WizardFooter,
 } from '../../components/onboarding/WizardControls';
+import { getErrorMessage } from '../../api/client';
+import { createCrewApi, listCrewsApi, removeCrewApi, updateCrewApi } from '../../api/crews';
+import { listMembersApi } from '../../api/users';
 
 const ACCENT_CLASS = {
   pink: 'bg-pink',
@@ -20,25 +24,80 @@ const ACCENT_CLASS = {
   maroon: 'bg-maroon',
 };
 
-let nextId = 1;
+export const StepCrews = ({ onBack, onNext }) => {
+  const [crews, setCrews] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-export const StepCrews = ({ data, update, onBack, onNext }) => {
-  const { crews, members } = data;
   // null = closed, {} = creating, {id,...} = editing that crew
   const [draft, setDraft] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState('');
 
-  const roster = ['John Smith', ...members.map((m) => m.name).filter(Boolean)];
+  const load = useCallback(async () => {
+    setError('');
+    try {
+      const [nextCrews, nextMembers] = await Promise.all([
+        listCrewsApi(),
+        listMembersApi(),
+      ]);
+      setCrews(nextCrews);
+      setMembers(nextMembers);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Could not load your crews.'));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const saveCrew = (form) => {
-    update({
-      crews: form.id
-        ? crews.map((c) => (c.id === form.id ? form : c))
-        : [...crews, { ...form, id: `c${nextId++}` }],
-    });
-    setDraft(null);
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const saveCrew = async (form) => {
+    setSaving(true);
+    setModalError('');
+    try {
+      if (form.id) {
+        await updateCrewApi(form.id, form);
+      } else {
+        await createCrewApi(form);
+      }
+      // Creating a crew promotes its lead and re-points every member's
+      // `assignToCrew`, so the roster is refetched rather than patched.
+      await load();
+      setDraft(null);
+    } catch (err) {
+      setModalError(getErrorMessage(err, 'Could not save this crew.'));
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const removeCrew = (id) => update({ crews: crews.filter((c) => c.id !== id) });
+  const removeCrew = async (id) => {
+    setError('');
+    try {
+      await removeCrewApi(id);
+      await load();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Could not remove this crew.'));
+    }
+  };
+
+  /**
+   * A person belongs to exactly one crew, so only the unassigned are offered —
+   * plus whoever is already on the crew being edited. The company owner is
+   * never a candidate: a crew lead is promoted from a technician, and the
+   * owner's `company` role can't be promoted.
+   */
+  const roster = members
+    .filter((member) => !member.crew || member.crew === draft?.id)
+    .map((member) => ({ id: member.id, label: member.name }));
+
+  const takenColors = crews
+    .filter((crew) => crew.id !== draft?.id)
+    .map((crew) => crew.color);
 
   return (
     <OnboardingShell
@@ -47,7 +106,11 @@ export const StepCrews = ({ data, update, onBack, onNext }) => {
       subtitle="Group your technicians into crews. Assign jobs by crew."
     >
       <div className="onb-body-center">
-        {crews.length === 0 ? (
+        <ErrorBanner>{error}</ErrorBanner>
+
+        {loading ? (
+          <p className="onb-loading">Loading your crews…</p>
+        ) : crews.length === 0 ? (
           <>
             <div className="onb-empty">
               <div className="flex items-center justify-center gap-[10px]">
@@ -56,7 +119,11 @@ export const StepCrews = ({ data, update, onBack, onNext }) => {
                 <UsersRound className="size-[30px]" strokeWidth={2} />
               </div>
               <span className="onb-empty-title">No crews yet</span>
-              <span className="onb-empty-text">Click below to create your first crew</span>
+              <span className="onb-empty-text">
+                {members.length === 0
+                  ? 'Add team members first — a crew needs a lead.'
+                  : 'Click below to create your first crew'}
+              </span>
             </div>
             <DarkPillButton icon={Plus} onClick={() => setDraft({})}>
               Create Crew
@@ -70,7 +137,7 @@ export const StepCrews = ({ data, update, onBack, onNext }) => {
                 <div className="onb-list-row-main">
                   <span className="onb-crew-name">{crew.name || 'Untitled crew'}</span>
                   <span className="onb-crew-meta">
-                    {[crew.lead, ...crew.members].filter(Boolean).join(', ')}
+                    {[crew.leadName, ...crew.memberNames].filter(Boolean).join(', ')}
                   </span>
                 </div>
                 <button
@@ -107,8 +174,14 @@ export const StepCrews = ({ data, update, onBack, onNext }) => {
           key={draft.id ?? 'new'}
           crew={draft}
           roster={roster}
+          takenColors={takenColors}
+          saving={saving}
+          error={modalError}
           onSave={saveCrew}
-          onClose={() => setDraft(null)}
+          onClose={() => {
+            setDraft(null);
+            setModalError('');
+          }}
         />
       )}
     </OnboardingShell>

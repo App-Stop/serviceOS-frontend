@@ -3,6 +3,7 @@ import bgFadeDark from '../assets/bgFadeDark.svg';
 import rocket from '../assets/rocket.svg';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { APP_MODE, setAppMode } from '../appMode';
 
 export const Welcome = () => {
   const navigate = useNavigate();
@@ -13,6 +14,19 @@ export const Welcome = () => {
     if (leaving) return;
     setLeaving(true);
     setTimeout(() => navigate(path), 230);
+  };
+
+  // The fork between the two app modes. Setting up puts the app on the
+  // company's own API data; skipping opens the seeded demo dataset instead,
+  // which can be left again later from the banner the shell shows.
+  const startSetup = () => {
+    setAppMode(APP_MODE.LIVE);
+    leaveTo('/onboarding');
+  };
+
+  const startDemo = () => {
+    setAppMode(APP_MODE.DEMO);
+    leaveTo('/dashboard');
   };
 
   return (
@@ -47,7 +61,7 @@ export const Welcome = () => {
 
           {/* Header text */}
           <div className="flex w-full flex-col items-center justify-center gap-[10px] text-center leading-[normal] whitespace-nowrap">
-            <p className="text-[24px] font-semibold text-neutral-50">Greetings, John</p>
+            <p className="text-[24px] font-semibold text-neutral-50">Welcome to ServiceOS</p>
             <p className="overflow-hidden text-ellipsis text-[14px] font-normal text-neutral-500">
               Let’s setup your company.
             </p>
@@ -58,7 +72,7 @@ export const Welcome = () => {
         <div className="flex flex-col items-center justify-center gap-[20px]">
           <button
             type="button"
-            onClick={() => leaveTo('/onboarding')}
+            onClick={startSetup}
             className="flex h-[44px] w-[160px] cursor-pointer items-center justify-center gap-[var(--spacing-sm)] overflow-clip rounded-[100px] border border-neutral-200 bg-neutral-50 px-[var(--spacing-xl)] py-[10px]"
           >
             <span className="flex items-center justify-center px-[var(--spacing-xxs)]">
@@ -71,7 +85,7 @@ export const Welcome = () => {
 
           <button
             type="button"
-            onClick={() => leaveTo('/dashboard')}
+            onClick={startDemo}
             className="cursor-pointer overflow-hidden text-ellipsis text-center text-[14px] font-normal leading-[normal] text-neutral-500 whitespace-nowrap"
           >
             Skip for now

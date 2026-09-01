@@ -49,6 +49,7 @@
   --color-red-light: #ffecee;
   --color-violent-light: #eee5ff;
   --color-yellow-light: #fffae5;
+  --color-cyan-light: #e5faf9;
   --color-green: #00c064;
   --color-red: #f30000;
   --color-pink: #ff1fad;
@@ -111,6 +112,10 @@
 
 .field-input {
   @apply w-full px-3.5 py-2.5 rounded-[30px] bg-white border border-white-200 text-sm text-neutral-900 placeholder:text-neutral-800 focus:outline-none focus:border-neutral-900 transition-colors;
+}
+
+.field-input:disabled {
+  @apply bg-neutral-50 text-neutral-800 opacity-60 cursor-not-allowed;
 }
 
 .btn-primary {

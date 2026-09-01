@@ -1,14 +1,27 @@
 /**
- * Prototype customer store.
+ * Customer store.
  *
- * Holds the customer records in memory (mirrored to localStorage so edits
- * survive a refresh) and notifies subscribers on every change. This is a
- * stand-in for the API layer — when a database is wired up, replace the
- * mutators below with real requests and drop the localStorage mirror; the
- * hooks and their call sites can stay as they are.
+ * In demo mode this holds the seeded prototype records in memory (mirrored to
+ * localStorage so edits survive a refresh). In live mode the same collection
+ * is served by `/customers` and every read and write goes to the API — the
+ * store just caches it in the shape the screens already read, so no call site
+ * has to know which mode it is rendering.
  */
 
 import { useSyncExternalStore } from 'react';
+import { isLiveMode } from '../appMode';
+import {
+  createCustomerApi,
+  emptyAddress,
+  formatAddress,
+  getCustomerApi,
+  listCustomersApi,
+  listCustomersPageApi,
+  removeCustomerApi,
+  updateCustomerApi,
+} from '../api/customers';
+
+export { emptyAddress, formatAddress } from '../api/customers';
 
 const STORAGE_KEY = 'serviceos.customers.v1';
 
@@ -72,17 +85,23 @@ const read = () => {
   }
 };
 
-let customers = read();
+// Live mode starts empty and fills from the API; demo mode starts seeded.
+let customers = isLiveMode() ? [] : read();
 const listeners = new Set();
+
+const notify = () => listeners.forEach((listener) => listener());
 
 const commit = (next) => {
   customers = next;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(customers));
+    // Only the demo dataset is mirrored to storage; live data belongs to the API.
+    if (!isLiveMode()) {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(customers));
+    }
   } catch {
     // Storage unavailable (private mode / quota) — in-memory state still works.
   }
-  listeners.forEach((listener) => listener());
+  notify();
 };
 
 const subscribe = (listener) => {
@@ -92,9 +111,116 @@ const subscribe = (listener) => {
 
 const getSnapshot = () => customers;
 
+/* ── Live mode ─────────────────────────────────────────── */
+
+let hydrating = null;
+// Demo data is present from the first render; live data arrives over the wire.
+let loaded = !isLiveMode();
+
+/** Replaces the store contents with the company's own customers. */
+const refreshFromApi = async () => {
+  customers = await listCustomersApi();
+  loaded = true;
+  notify();
+};
+
+/**
+ * Kicked off from the read hooks so a live screen loads its data by being
+ * rendered, the same way the demo store is simply already there. The in-flight
+ * promise is shared, so mounting several customer screens fetches once.
+ */
+const ensureLiveData = () => {
+  if (!isLiveMode() || hydrating) return;
+  hydrating = refreshFromApi().catch(() => {
+    // Leaves the list empty; the next mount retries.
+    hydrating = null;
+  });
+};
+
+/** Re-reads after a write, so the cached list matches what the API stored. */
+const reloadLive = () => refreshFromApi().catch(() => {});
+
+/** Fields the demo dataset can be searched on, matching the API's `$or`. */
+const matchesCustomer = (customer, term) =>
+  customer.name.toLowerCase().includes(term) ||
+  customer.email.toLowerCase().includes(term) ||
+  customer.phone.toLowerCase().includes(term);
+
+/**
+ * One page of customers for the table. Live mode asks the API, which does the
+ * searching, counting and slicing; demo mode pages the seeded array the same
+ * way so the table has one set of controls in both modes.
+ */
+export const fetchCustomersPage = async ({ page = 1, limit = 20, search = '' } = {}) => {
+  if (isLiveMode()) return listCustomersPageApi({ page, limit, search });
+
+  const term = search.trim().toLowerCase();
+  const matched = term
+    ? customers.filter((customer) => matchesCustomer(customer, term))
+    : customers;
+
+  const totalCount = matched.length;
+  const start = (page - 1) * limit;
+
+  return {
+    items: matched.slice(start, start + limit),
+    pagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit) || 0,
+    },
+  };
+};
+
+/**
+ * One customer with their statistics, job history page and recent activity —
+ * what the detail screen and the edit dialog open on. Demo mode answers from
+ * the seeded record, which already carries its own sample relations.
+ */
+export const fetchCustomer = async (id, { page = 1, limit = 20 } = {}) => {
+  if (isLiveMode()) return getCustomerApi(id, { page, limit });
+
+  const customer = customers.find((item) => String(item.id) === String(id));
+  if (!customer) return null;
+
+  const start = (page - 1) * limit;
+  const totalCount = customer.jobs.length;
+
+  return {
+    ...customer,
+    billingAddress: customer.billingAddress ?? emptyAddress(),
+    serviceAddress: customer.serviceAddress ?? emptyAddress(),
+    jobs: customer.jobs.slice(start, start + limit),
+    // The seeded feed already reads as a sentence; it's reshaped onto the
+    // API's entry shape so the detail screen renders one way in both modes.
+    activity: customer.activity.map((entry) => ({
+      id: entry.id,
+      type: null,
+      verb: [entry.verb, entry.target, entry.connector].filter(Boolean).join(' '),
+      chipLabel: entry.chip?.label ?? null,
+      actor: entry.actor,
+      createdAt: null,
+      time: entry.time ?? '',
+    })),
+    jobsPagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit) || 0,
+    },
+  };
+};
+
 /* ── Mutators ──────────────────────────────────────────── */
 
-export const addCustomer = (input) => {
+export const addCustomer = async (input) => {
+  if (isLiveMode()) {
+    const created = await createCustomerApi(input);
+    await reloadLive();
+    return created;
+  }
+
   const id = customers.reduce((max, customer) => Math.max(max, customer.id), 0) + 1;
   const customer = withRelations({
     id,
@@ -111,27 +237,71 @@ export const addCustomer = (input) => {
     invoices: 0,
     rating: 0,
     ...input,
+    // The dialog collects structured addresses; the demo table lists places.
+    locations: [input.serviceAddress, input.billingAddress]
+      .map(formatAddress)
+      .filter(Boolean)
+      .slice(0, 1),
   });
   commit([...customers, customer]);
   return customer;
 };
 
-export const updateCustomer = (id, patch) => {
-  commit(customers.map((customer) => (customer.id === id ? { ...customer, ...patch } : customer)));
+export const updateCustomer = async (id, patch) => {
+  if (isLiveMode()) {
+    const updated = await updateCustomerApi(id, patch);
+    await reloadLive();
+    return updated;
+  }
+
+  const next = {
+    ...patch,
+    locations: [patch.serviceAddress, patch.billingAddress]
+      .map(formatAddress)
+      .filter(Boolean)
+      .slice(0, 1),
+  };
+
+  commit(
+    customers.map((customer) =>
+      String(customer.id) === String(id) ? { ...customer, ...next } : customer,
+    ),
+  );
 };
 
-export const removeCustomer = (id) => {
-  commit(customers.filter((customer) => customer.id !== id));
+export const removeCustomer = async (id) => {
+  if (isLiveMode()) {
+    await removeCustomerApi(id);
+    return reloadLive();
+  }
+
+  commit(customers.filter((customer) => String(customer.id) !== String(id)));
 };
 
-/** Restores the seed records — handy while clicking around the prototype. */
-export const resetCustomers = () => commit(seed);
+/**
+ * Restores the seed records — handy while clicking around the prototype.
+ * Demo only; there is nothing to reset a company's real customers to.
+ */
+export const resetCustomers = () => {
+  if (isLiveMode()) return;
+  commit(seed);
+};
 
 /* ── Hooks ─────────────────────────────────────────────── */
 
-export const useCustomers = () => useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+export const useCustomers = () => {
+  ensureLiveData();
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+};
 
-export const useCustomer = (id) => useCustomers().find((customer) => customer.id === Number(id));
+// Ids are numbers in the seed data and ObjectId strings from the API, so the
+// route param is matched as text either way.
+export const useCustomer = (id) =>
+  useCustomers().find((customer) => String(customer.id) === String(id));
+
+/** False until the live customer list has arrived; always true in demo mode. */
+export const useCustomersLoaded = () =>
+  useSyncExternalStore(subscribe, () => loaded, () => loaded);
 
 /* ── Helpers ───────────────────────────────────────────── */
 

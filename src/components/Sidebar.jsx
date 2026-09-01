@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   House,
   UsersRound,
@@ -11,8 +11,10 @@ import {
   UserStar,
   ChartColumn,
   UserRound,
+  LogOut,
 } from 'lucide-react';
 import { useCurrentUser } from '../data';
+import { clearAppMode } from '../appMode';
 import './Sidebar.css';
 
 const navItems = [
@@ -29,6 +31,15 @@ const navItems = [
 
 export const Sidebar = ({ collapsed = false, onMobileSelect }) => {
   const user = useCurrentUser();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    // The next account picks its own mode at the welcome fork.
+    clearAppMode();
+    navigate('/login');
+  };
 
   return (
     <aside className={`sidebar${collapsed ? ' sidebar--collapsed' : ''}`}>
@@ -56,26 +67,38 @@ export const Sidebar = ({ collapsed = false, onMobileSelect }) => {
         </nav>
       </div>
 
-      <NavLink
-        to="/profile"
-        title={collapsed ? user.name : undefined}
-        onClick={() => onMobileSelect?.()}
-        className={({ isActive }) =>
-          `sidebar__profile${isActive ? ' sidebar__profile--active' : ''}`
-        }
-      >
-        <span className="sidebar__avatar">
-          {user.photo ? (
-            <img className="sidebar__avatar-image" src={user.photo} alt="" />
-          ) : (
-            <UserRound size={20} strokeWidth={2} />
-          )}
-        </span>
-        <span className="sidebar__profile-meta">
-          <span className="sidebar__profile-name">{user.name}</span>
-          <span className="sidebar__profile-role">{user.role}</span>
-        </span>
-      </NavLink>
+      <div className="sidebar__bottom flex flex-col gap-2 w-full">
+        <NavLink
+          to="/profile"
+          title={collapsed ? user.name : undefined}
+          onClick={() => onMobileSelect?.()}
+          className={({ isActive }) =>
+            `sidebar__profile${isActive ? ' sidebar__profile--active' : ''}`
+          }
+        >
+          <span className="sidebar__avatar">
+            {user.photo ? (
+              <img className="sidebar__avatar-image" src={user.photo} alt="" />
+            ) : (
+              <UserRound size={20} strokeWidth={2} />
+            )}
+          </span>
+          <span className="sidebar__profile-meta">
+            <span className="sidebar__profile-name">{user.name}</span>
+            <span className="sidebar__profile-role">{user.role}</span>
+          </span>
+        </NavLink>
+
+        <button
+          type="button"
+          onClick={handleLogout}
+          title={collapsed ? 'Logout' : undefined}
+          className="sidebar__link text-red-400 hover:text-red-300 hover:bg-neutral-800 cursor-pointer"
+        >
+          <LogOut className="sidebar__icon text-red-400" size={20} strokeWidth={2} />
+          <span className="sidebar__label">Logout</span>
+        </button>
+      </div>
     </aside>
   );
 };

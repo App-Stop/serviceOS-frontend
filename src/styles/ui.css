@@ -30,6 +30,15 @@
   @apply flex items-center justify-center px-xxs;
 }
 
+/* Destructive variant, for the delete action on a record's own screen. */
+.pill-button--danger {
+  @apply text-error;
+}
+
+.pill-button--danger:hover {
+  @apply bg-error-light;
+}
+
 /* Larger 44px pill, used for filters and toolbar actions. */
 .pill-button--lg {
   @apply h-11 gap-xs px-lg py-2.5 border border-neutral-200 text-sm font-normal leading-5;
@@ -335,6 +344,23 @@
 
 .status-chip--cancelled {
   @apply bg-red-light text-red;
+}
+
+/*
+ * The API spells three of the job statuses with a hyphen (`en-route`,
+ * `on-site`, `in-progress`) where the prototype dataset ran them together, so
+ * both spellings carry the same colours.
+ */
+.status-chip--en-route {
+  @apply bg-yellow-light text-yellow;
+}
+
+.status-chip--on-site {
+  @apply bg-blue-light text-blue;
+}
+
+.status-chip--in-progress {
+  @apply bg-cyan-light text-cyan;
 }
 
 /* Priority variants — used by the activity feed when priority changes. */

@@ -13,11 +13,14 @@ import { CustomerFormModal } from '../components/CustomerFormModal';
 import { SendMessageModal } from '../components/SendMessageModal';
 import { addJob } from '../data/jobs';
 import { addCustomer } from '../data/customers';
+import { getErrorMessage } from '../api/client';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState(null);
+  const [savingCustomer, setSavingCustomer] = useState(false);
+  const [customerError, setCustomerError] = useState('');
 
   const handleAction = (actionId) => {
     if (actionId === 'invoice') {
@@ -73,12 +76,25 @@ const Dashboard = () => {
 
       {activeModal === 'customer' && (
         <CustomerFormModal
-          onClose={() => setActiveModal(null)}
-          onSave={(values) => {
-            const created = addCustomer(values);
+          saving={savingCustomer}
+          error={customerError}
+          onClose={() => {
             setActiveModal(null);
-            if (created?.id) {
-              navigate(`/customers/${created.id}`);
+            setCustomerError('');
+          }}
+          onSave={async (values) => {
+            setSavingCustomer(true);
+            setCustomerError('');
+            try {
+              const created = await addCustomer(values);
+              setActiveModal(null);
+              if (created?.id) {
+                navigate(`/customers/${created.id}`);
+              }
+            } catch (error) {
+              setCustomerError(getErrorMessage(error, 'Could not save this customer.'));
+            } finally {
+              setSavingCustomer(false);
             }
           }}
         />

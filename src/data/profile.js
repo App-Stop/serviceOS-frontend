@@ -10,6 +10,9 @@
  */
 
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react';
+import { isLiveMode } from '../appMode';
+import { getStoredUser } from '../api/auth';
+import { ALL_ROLE_LABELS, ROLE_LABEL } from '../api/users';
 
 const STORAGE_PROFILE_KEY = 'serviceos.profile.v1';
 
@@ -48,13 +51,9 @@ export const SECTION_HEADINGS = {
 
 /* ── Field options ───────────────────────────────────────── */
 
-export const ROLE_OPTIONS = [
-  'Super Admin (Owner)',
-  'Admin',
-  'Dispatcher',
-  'Lead Technician',
-  'Technician',
-];
+// The API's three roles and nothing else — `company` (shown as Admin) is the
+// account owner, the other two are team members.
+export const ROLE_OPTIONS = ALL_ROLE_LABELS;
 
 export const TIME_ZONE_OPTIONS = [
   'US & Canada (UTC-06:00)',
@@ -152,7 +151,7 @@ export const SEED_PROFILE = {
     fullName: 'John Smith',
     email: 'johnsmith@summitplumbing.com',
     phone: '(555) 000-0000',
-    role: 'Super Admin (Owner)',
+    role: 'Admin',
     photo: '',
     useWorkspaceTimezone: true,
     timeZone: 'US & Canada (UTC-06:00)',
@@ -277,16 +276,20 @@ export const resetProfile = () => commit(SEED_PROFILE);
  */
 export const useCurrentUser = () => {
   const account = useProfileSection('account');
+  // In live mode the signed-in account is the real one, not the seed persona.
+  const signedIn = isLiveMode() ? getStoredUser() : null;
 
   return useMemo(
     () => ({
-      name: account.fullName,
+      name: signedIn?.fullName || signedIn?.email || account.fullName,
       /* The sidebar shows the short role, not the parenthetical owner note. */
-      role: account.role.replace(/\s*\(.*\)$/, ''),
-      email: account.email,
+      role: signedIn
+        ? (ROLE_LABEL[signedIn.role] ?? account.role)
+        : account.role,
+      email: signedIn?.email || account.email,
       photo: account.photo,
     }),
-    [account],
+    [account, signedIn?.email, signedIn?.fullName, signedIn?.role],
   );
 };
 

@@ -74,7 +74,7 @@ export const AssignJobModal = ({ member, onAssign, onClose }) => {
               {member?.name || 'JJ Thompson'}
             </h3>
             <p className="text-sm font-normal text-black-200">
-              {member?.role || 'Lead Technician'} • {member?.crew || 'North Crew'}
+              {member?.role || 'Technician'} • {member?.crew || 'Solo'}
             </p>
           </div>
         </div>

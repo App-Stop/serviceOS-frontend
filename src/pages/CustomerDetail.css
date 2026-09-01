@@ -10,6 +10,14 @@
   @apply flex flex-col gap-2.5 items-start;
 }
 
+.customer-detail__header-actions {
+  @apply flex items-center gap-2.5 shrink-0;
+}
+
+.customer-detail__error {
+  @apply w-full rounded-[12px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600;
+}
+
 /* ── Layout ────────────────────────────────────────────── */
 
 .customer-detail__grid {
@@ -43,6 +51,19 @@
 
 .customer-detail__job-assignee {
   @apply flex items-center gap-1;
+}
+
+/* Each history row opens its job. */
+.customer-detail__job {
+  @apply cursor-pointer transition-colors;
+}
+
+.customer-detail__job:hover {
+  @apply bg-neutral-100;
+}
+
+.customer-detail__empty {
+  @apply px-5 py-6 text-center text-sm font-normal text-black-200;
 }
 
 /* ── Section heading with a trailing action ────────────── */

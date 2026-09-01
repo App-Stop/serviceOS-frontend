@@ -56,20 +56,36 @@ export const MutedPillButton = ({ icon: Icon, children, onClick }) => (
   </button>
 );
 
-/** Native select styled as a Figma input, with the chevron affordance. */
+/**
+ * Native select styled as a Figma input, with the chevron affordance.
+ * `options` take either plain strings or `{ value, label }` pairs, the latter
+ * for lists whose stored value is an id rather than the visible text.
+ */
 export const Select = ({ value, onChange, options, placeholder }) => (
   <div className="onb-select-wrap">
     <select className="onb-select" value={value} onChange={onChange}>
       <option value="">{placeholder}</option>
-      {options.map((option) => (
-        <option key={option} value={option}>
-          {option}
-        </option>
-      ))}
+      {options.map((option) => {
+        const optionValue = typeof option === 'string' ? option : option.value;
+        const label = typeof option === 'string' ? option : option.label;
+        return (
+          <option key={optionValue} value={optionValue}>
+            {label}
+          </option>
+        );
+      })}
     </select>
     <ChevronDown className="onb-select-chevron" strokeWidth={2} />
   </div>
 );
+
+/** Inline failure message for a step that could not be saved. */
+export const ErrorBanner = ({ children }) =>
+  children ? (
+    <p className="onb-error" role="alert">
+      {children}
+    </p>
+  ) : null;
 
 /**
  * Back + forward footer. When `skipLabel` is given and `canContinue` is false the
@@ -82,33 +98,39 @@ export const WizardFooter = ({
   nextIcon: NextIcon = ArrowRight,
   skipLabel,
   canContinue = true,
+  busy = false,
 }) => {
   const showSkip = Boolean(skipLabel) && !canContinue;
 
   return (
     <div className="onb-footer">
       {onBack && (
-        <button type="button" onClick={onBack} className="onb-nav-btn">
+        <button type="button" onClick={onBack} disabled={busy} className="onb-nav-btn">
           <ArrowLeft className="size-[18px] shrink-0" strokeWidth={2} />
           <span className="px-[var(--spacing-xxs)]">Back</span>
         </button>
       )}
 
       {showSkip ? (
-        <button type="button" onClick={onNext} className="onb-nav-btn onb-nav-grow">
-          <span className="px-[var(--spacing-xxs)]">{skipLabel}</span>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={busy}
+          className="onb-nav-btn onb-nav-grow"
+        >
+          <span className="px-[var(--spacing-xxs)]">{busy ? 'Saving…' : skipLabel}</span>
           <ArrowRight className="size-[18px] shrink-0" strokeWidth={2} />
         </button>
       ) : (
         <button
           type="button"
           onClick={onNext}
-          disabled={!canContinue}
+          disabled={!canContinue || busy}
           className="onb-nav-primary"
         >
           <span className="onb-glow" />
           {NextIcon !== ArrowRight && <NextIcon className="relative size-[20px] shrink-0" strokeWidth={2} />}
-          <span className="relative px-[var(--spacing-xxs)]">{nextLabel}</span>
+          <span className="relative px-[var(--spacing-xxs)]">{busy ? 'Saving…' : nextLabel}</span>
           {NextIcon === ArrowRight && <ArrowRight className="relative size-[20px] shrink-0" strokeWidth={2} />}
         </button>
       )}

@@ -6,16 +6,32 @@ import { GoogleLogo } from '../components/GoogleLogo';
 import { ArrowRight } from 'lucide-react';
 import './SignIn.css';
 import { useNavigate } from 'react-router-dom';
+import { signInApi } from '../api/auth';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email) {
-      navigate('/verify-otp', { state: { email } });
+    if (!email) return;
+
+    setLoading(true);
+    setError('');
+    try {
+      const data = await signInApi(email);
+      if (data?.success) {
+        navigate('/verify-otp', { state: { email } });
+      } else {
+        setError(data?.message || 'Sign in failed. Please try again.');
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || 'An error occurred during sign in.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,6 +72,11 @@ const SignIn = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">
+                {error}
+              </div>
+            )}
             <InputGroup
               label="Email"
               type="email"
@@ -65,8 +86,8 @@ const SignIn = () => {
               required
             />
 
-            <Button type="submit" variant="primary" endIcon={<ArrowRight className="w-4 h-4" />} className="mt-2" disabled={ email === ''}>
-              Continue
+            <Button type="submit" variant="primary" endIcon={<ArrowRight className="w-4 h-4" />} className="mt-2" disabled={email === '' || loading}>
+              {loading ? 'Sending code...' : 'Continue'}
             </Button>
           </form>
 

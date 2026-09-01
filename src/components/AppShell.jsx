@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Search, Bell, PanelLeftClose, PanelLeftOpen, FlaskConical } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { SearchModal } from './SearchModal';
+import { APP_MODE, setAppMode, useAppMode } from '../appMode';
 import '../styles/ui.css';
 import './AppShell.css';
 
@@ -20,6 +21,7 @@ export const AppShell = ({ topbarLead, topbarActions, children }) => {
     typeof window !== 'undefined' ? window.innerWidth < 1024 : false,
   );
   const [searchOpen, setSearchOpen] = useState(false);
+  const mode = useAppMode();
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -84,6 +86,26 @@ export const AppShell = ({ topbarLead, topbarActions, children }) => {
             )}
           </div>
         </header>
+
+        {mode === APP_MODE.DEMO && (
+          <div className="app-shell__demo-banner" role="status">
+            <FlaskConical size={18} strokeWidth={2} className="shrink-0" />
+            <span className="app-shell__demo-text">
+              You’re exploring ServiceOS with sample data. Nothing here is saved to
+              your company.
+            </span>
+            <button
+              type="button"
+              className="app-shell__demo-action"
+              onClick={() => {
+                setAppMode(APP_MODE.LIVE);
+                navigate('/onboarding');
+              }}
+            >
+              Set up my company
+            </button>
+          </div>
+        )}
 
         {children}
       </main>

@@ -15,9 +15,15 @@ export const FilterDropdown = ({
   onChange,
   fullWidth = false,
   align = 'auto', // 'auto' | 'left' | 'right'
+  disabled = false,
 }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+
+  // A dropdown that goes disabled while open shouldn't keep its menu up.
+  useEffect(() => {
+    if (disabled) setOpen(false);
+  }, [disabled]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -45,6 +51,7 @@ export const FilterDropdown = ({
         type="button"
         className="filter-dropdown__trigger"
         onClick={() => setOpen((isOpen) => !isOpen)}
+        disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
@@ -60,7 +67,7 @@ export const FilterDropdown = ({
         <ChevronDown className="filter-dropdown__caret" size={16} strokeWidth={2} />
       </button>
 
-      {open && (
+      {open && !disabled && (
         <div
           className={`filter-dropdown__menu${menuAlignClass}`}
           role="listbox"

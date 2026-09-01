@@ -80,6 +80,10 @@
   @apply flex flex-col gap-5 w-full;
 }
 
+.team-detail__empty {
+  @apply py-4 text-center text-sm font-normal text-black-200;
+}
+
 .team-detail__job-item {
   @apply flex items-center justify-between w-full;
 }

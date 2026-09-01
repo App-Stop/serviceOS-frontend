@@ -5,30 +5,78 @@ import { Button } from '../components/Button';
 import { ArrowLeft, Lightbulb, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import badgeCheck from '../assets/badge-check.png';
+import { verifyOtpApi, signInApi } from '../api/auth';
+import { APP_MODE, getAppMode, setAppMode } from '../appMode';
 
 export const VerifyOtp = () => {
   const [otp, setOtp] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [resendMessage, setResendMessage] = useState('');
+
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || 'name@company.com';
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     if (otp.length === 4) {
-      setIsVerified(true);
-      setTimeout(() => {
-        setIsFadingOut(true);
-      }, 700);
-      setTimeout(() => {
-        navigate('/welcome');
-      }, 1200);
+      setLoading(true);
+      setError('');
+      try {
+        const data = await verifyOtpApi(email, otp);
+        if (data?.success && data?.data?.token) {
+          localStorage.setItem('token', data.data.token);
+          if (data?.data?.user) {
+            localStorage.setItem('user', JSON.stringify(data.data.user));
+          }
+          const user = data?.data?.user;
+          const isOnboardingCompleted = user?.isOnboardingCompleted ?? false;
+
+          // An account that already finished onboarding has real data to come
+          // back to, so it skips the welcome fork — unless it deliberately
+          // left the app in demo mode.
+          if (isOnboardingCompleted && !getAppMode()) {
+            setAppMode(APP_MODE.LIVE);
+          }
+
+          setIsVerified(true);
+          setTimeout(() => {
+            setIsFadingOut(true);
+          }, 700);
+          setTimeout(() => {
+            if (isOnboardingCompleted) {
+              navigate('/dashboard');
+            } else {
+              navigate('/welcome');
+            }
+          }, 1200);
+        } else {
+          setError(data?.message || 'Verification failed.');
+        }
+      } catch (err) {
+        setError(err?.response?.data?.message || 'Invalid OTP code.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
-  const handleResend = () => {
-    alert('A new OTP has been sent to your email.');
+  const handleResend = async () => {
+    setError('');
+    setResendMessage('');
+    try {
+      const data = await signInApi(email);
+      if (data?.success) {
+        setResendMessage('A new OTP has been sent to your email.');
+      } else {
+        setError(data?.message || 'Failed to resend OTP.');
+      }
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Failed to resend OTP.');
+    }
   };
 
   return (
@@ -71,6 +119,18 @@ export const VerifyOtp = () => {
               </p>
             </div>
 
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200 mb-4">
+                {error}
+              </div>
+            )}
+
+            {resendMessage && (
+              <div className="text-sm text-green-600 bg-green-50 p-2 rounded border border-green-200 mb-4">
+                {resendMessage}
+              </div>
+            )}
+
             <form onSubmit={handleVerify} className="flex flex-col gap-6">
               <div className="flex flex-col items-start gap-2">
                 <label className="field-label">Enter Code</label>
@@ -80,10 +140,10 @@ export const VerifyOtp = () => {
               <Button
                 type="submit"
                 variant="primary"
-                disabled={otp.length < 4}
+                disabled={otp.length < 4 || loading}
                 endIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Verify Code
+                {loading ? 'Verifying...' : 'Verify Code'}
               </Button>
             </form>
 

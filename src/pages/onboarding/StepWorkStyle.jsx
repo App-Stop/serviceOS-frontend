@@ -1,9 +1,16 @@
 import React from 'react';
 import { Check, Lightbulb, UserRound, UsersRound } from 'lucide-react';
 import { OnboardingShell } from '../../components/onboarding/OnboardingShell';
-import { OptionCard, WizardFooter } from '../../components/onboarding/WizardControls';
+import {
+  ErrorBanner,
+  OptionCard,
+  WizardFooter,
+} from '../../components/onboarding/WizardControls';
 
-export const StepWorkStyle = ({ data, update, onBack, onNext }) => (
+// Continuing from here saves the whole business profile — this step supplies
+// the last field it needs (`teamWorkChoice`), and everything after it depends
+// on the company record existing.
+export const StepWorkStyle = ({ data, update, onBack, onNext, saving, error }) => (
   <OnboardingShell
     step={2}
     title="How does your team work?"
@@ -36,8 +43,10 @@ export const StepWorkStyle = ({ data, update, onBack, onNext }) => (
           job needs more than one person.
         </p>
       </div>
+
+      <ErrorBanner>{error}</ErrorBanner>
     </div>
 
-    <WizardFooter onBack={onBack} onNext={onNext} />
+    <WizardFooter onBack={onBack} onNext={onNext} busy={saving} />
   </OnboardingShell>
 );

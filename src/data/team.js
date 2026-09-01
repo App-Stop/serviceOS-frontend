@@ -6,6 +6,21 @@
  */
 
 import { useSyncExternalStore } from 'react';
+import { isLiveMode } from '../appMode';
+import {
+  createMemberApi,
+  listMembersApi,
+  listMembersPageApi,
+  removeMemberApi,
+  updateMemberApi,
+} from '../api/users';
+import {
+  createCrewApi,
+  listCrewsApi,
+  removeCrewApi,
+  setMemberCrewApi,
+  updateCrewApi,
+} from '../api/crews';
 
 const STORAGE_MEMBERS_KEY = 'serviceos.team_members.v1';
 const STORAGE_CREWS_KEY = 'serviceos.crews.v1';
@@ -15,7 +30,7 @@ export const SEED_MEMBERS = [
     id: 1,
     name: 'JJ Thompson',
     phone: '(555) 201-1001',
-    role: 'Lead Technician',
+    role: 'Crew Lead',
     email: 'jj.thompson@gmail.com',
     crew: 'North Crew',
     status: 'assigned',
@@ -126,7 +141,7 @@ export const SEED_MEMBERS = [
     id: 7,
     name: 'Carlos Mendez',
     phone: '(555) 103-5529',
-    role: 'Lead Technician',
+    role: 'Crew Lead',
     email: 'carlos.mendez@gmail.com',
     crew: 'Solo',
     status: 'assigned',
@@ -141,7 +156,7 @@ export const SEED_MEMBERS = [
     id: 8,
     name: 'Priya Sharma',
     phone: '(555) 264-9981',
-    role: 'Lead Technician',
+    role: 'Crew Lead',
     email: 'priya.sharma@outlook.com',
     crew: 'West Crew',
     status: 'assigned',
@@ -246,8 +261,9 @@ const readStore = (key, fallback) => {
   }
 };
 
-let members = readStore(STORAGE_MEMBERS_KEY, SEED_MEMBERS);
-let crews = readStore(STORAGE_CREWS_KEY, SEED_CREWS);
+// Live mode starts empty and fills from the API; demo mode starts seeded.
+let members = isLiveMode() ? [] : readStore(STORAGE_MEMBERS_KEY, SEED_MEMBERS);
+let crews = isLiveMode() ? [] : readStore(STORAGE_CREWS_KEY, SEED_CREWS);
 
 const listeners = new Set();
 
@@ -258,7 +274,10 @@ const notify = () => {
 const commitMembers = (next) => {
   members = next;
   try {
-    window.localStorage.setItem(STORAGE_MEMBERS_KEY, JSON.stringify(members));
+    // Only the demo dataset is mirrored to storage; live data belongs to the API.
+    if (!isLiveMode()) {
+      window.localStorage.setItem(STORAGE_MEMBERS_KEY, JSON.stringify(members));
+    }
   } catch {
     // Ignore storage errors
   }
@@ -268,7 +287,9 @@ const commitMembers = (next) => {
 const commitCrews = (next) => {
   crews = next;
   try {
-    window.localStorage.setItem(STORAGE_CREWS_KEY, JSON.stringify(crews));
+    if (!isLiveMode()) {
+      window.localStorage.setItem(STORAGE_CREWS_KEY, JSON.stringify(crews));
+    }
   } catch {
     // Ignore storage errors
   }
@@ -280,20 +301,179 @@ const subscribe = (listener) => {
   return () => listeners.delete(listener);
 };
 
+/* ── Live mode ─────────────────────────────────────────── */
+
+/**
+ * In live mode the same two collections are served from the API instead of the
+ * seed data. They're kept in this store — and in the same shape the screens
+ * already read — so the pages don't have to know which mode they're rendering.
+ *
+ * The per-member job statistics the detail screen shows have no endpoint
+ * behind them yet, so they're filled with neutral placeholders rather than
+ * left undefined.
+ */
+const liveMemberShape = (member, crewsById) => ({
+  id: member.id,
+  name: member.name,
+  phone: member.phone,
+  email: member.email,
+  role: member.roleLabel,
+  crew: crewsById.get(member.crew)?.name ?? 'Solo',
+  status: member.crew ? 'assigned' : 'unassigned',
+  rate: member.rate,
+  activeJobs: 0,
+  jobsCompleted: 0,
+  rating: '—',
+  revenueGenerated: '$0',
+  jobHistory: [],
+});
+
+const liveCrewShape = (crew) => ({
+  id: crew.id,
+  name: crew.name,
+  lead: crew.leadName,
+  assignedJob: '-',
+  color: crew.color,
+  membersCount: crew.memberNames.length + (crew.leadName ? 1 : 0),
+  // The lead is counted on the crew but kept out of the member list, which is
+  // what the edit dialog binds its member tokens to.
+  members: crew.memberNames,
+  status: crew.leadName ? 'assigned' : 'unassigned',
+});
+
+let hydrating = null;
+// Demo data is present from the first render; live data arrives over the wire.
+let loaded = !isLiveMode();
+
+/** Replaces the store contents with the company's own team, once. */
+const refreshFromApi = async () => {
+  const [apiMembers, apiCrews] = await Promise.all([
+    listMembersApi(),
+    listCrewsApi(),
+  ]);
+
+  const crewsById = new Map(apiCrews.map((crew) => [crew.id, crew]));
+
+  members = apiMembers.map((member) => liveMemberShape(member, crewsById));
+  crews = apiCrews.map(liveCrewShape);
+  loaded = true;
+  notify();
+};
+
+/**
+ * Kicked off from the read hooks so a live screen loads its data by being
+ * rendered, the same way the demo store is simply already there. The in-flight
+ * promise is shared, so mounting several team screens fetches once.
+ */
+const ensureLiveData = () => {
+  if (!isLiveMode() || hydrating) return;
+  hydrating = refreshFromApi().catch(() => {
+    // Leaves the list empty; the next mount retries.
+    hydrating = null;
+  });
+};
+
+/** Re-reads after a write, since the API derives roles and crew membership. */
+const reloadLive = () => refreshFromApi().catch(() => {});
+
+/** Fields the demo dataset can be searched on, matching the members table. */
+const matchesMember = (member, term) =>
+  member.name.toLowerCase().includes(term) ||
+  member.role.toLowerCase().includes(term) ||
+  member.email.toLowerCase().includes(term) ||
+  member.phone.includes(term) ||
+  member.crew.toLowerCase().includes(term);
+
+/**
+ * One page of members for the team table. Live mode asks the API, which does
+ * the counting and slicing; demo mode pages the seeded array the same way so
+ * the table has one set of controls in both modes.
+ */
+export const fetchMembersPage = async ({ page = 1, limit = 20, search = '' }) => {
+  if (isLiveMode()) {
+    const crewsById = new Map(crews.map((crew) => [crew.id, crew]));
+    const { items, pagination } = await listMembersPageApi({
+      page,
+      limit,
+      search,
+    });
+
+    return {
+      // The page carries crew ids; names come from the crews already loaded.
+      items: items.map((member) => liveMemberShape(member, crewsById)),
+      pagination,
+    };
+  }
+
+  const term = search.trim().toLowerCase();
+  const matched = term
+    ? members.filter((member) => matchesMember(member, term))
+    : members;
+
+  const totalCount = matched.length;
+  const start = (page - 1) * limit;
+
+  return {
+    items: matched.slice(start, start + limit),
+    pagination: {
+      page,
+      limit,
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit) || 0,
+    },
+  };
+};
+
 /* ── Hooks ─────────────────────────────────────────────── */
 
-export const useTeamMembers = () =>
-  useSyncExternalStore(subscribe, () => members, () => members);
+export const useTeamMembers = () => {
+  ensureLiveData();
+  return useSyncExternalStore(subscribe, () => members, () => members);
+};
 
+// Ids are numbers in the seed data and ObjectId strings from the API, so the
+// route param is matched as text either way.
 export const useTeamMember = (id) =>
-  useTeamMembers().find((member) => member.id === Number(id));
+  useTeamMembers().find((member) => String(member.id) === String(id));
 
-export const useCrews = () =>
-  useSyncExternalStore(subscribe, () => crews, () => crews);
+export const useCrews = () => {
+  ensureLiveData();
+  return useSyncExternalStore(subscribe, () => crews, () => crews);
+};
+
+/** False until the live team has arrived; always true in demo mode. */
+export const useTeamLoaded = () =>
+  useSyncExternalStore(subscribe, () => loaded, () => loaded);
 
 /* ── Mutators ──────────────────────────────────────────── */
 
-export const addTeamMember = (input) => {
+// The Team screen identifies crews and people by name, which is all the demo
+// store ever needed. The API works in ids, so names are resolved back here
+// rather than reshaping every caller.
+const crewIdByName = (name) =>
+  crews.find((crew) => crew.name === name)?.id ?? '';
+
+const memberIdByName = (name) =>
+  members.find((member) => member.name === name)?.id ?? '';
+
+/** True when this person leads the named crew, who sit outside `members`. */
+const isLeadOfCrew = (crewName, memberName) =>
+  crews.some((crew) => crew.name === crewName && crew.lead === memberName);
+
+export const addTeamMember = async (input) => {
+  if (isLiveMode()) {
+    const created = await createMemberApi(input);
+
+    // Crew membership is a separate write — the create endpoint would only set
+    // the user's side of it.
+    const toCrewId = crewIdByName(input.crew);
+    if (toCrewId) {
+      await setMemberCrewApi({ memberId: created.id, toCrewId });
+    }
+
+    return reloadLive();
+  }
+
   const id = members.reduce((max, item) => Math.max(max, item.id), 0) + 1;
   const newMember = {
     id,
@@ -308,17 +488,56 @@ export const addTeamMember = (input) => {
   return newMember;
 };
 
-export const updateTeamMember = (id, patch) => {
+export const updateTeamMember = async (id, patch) => {
+  if (isLiveMode()) {
+    const current = members.find((member) => member.id === id) ?? {};
+    const next = { ...current, ...patch };
+
+    await updateMemberApi(id, next);
+
+    // The crew move is its own write, through the crew endpoints, so the crew's
+    // `members` array and the user's `assignToCrew` stay in agreement.
+    const fromCrewId = crewIdByName(current.crew);
+    const toCrewId = crewIdByName(next.crew);
+
+    if (fromCrewId !== toCrewId) {
+      await setMemberCrewApi({
+        memberId: id,
+        fromCrewId,
+        toCrewId,
+        wasLeadOfPrevious: isLeadOfCrew(current.crew, current.name),
+      });
+    }
+
+    return reloadLive();
+  }
+
   commitMembers(
     members.map((member) => (member.id === id ? { ...member, ...patch } : member)),
   );
 };
 
 export const removeTeamMember = (id) => {
+  if (isLiveMode()) {
+    return removeMemberApi(id).then(reloadLive);
+  }
+
   commitMembers(members.filter((member) => member.id !== id));
 };
 
 export const addCrew = (input) => {
+  if (isLiveMode()) {
+    return createCrewApi({
+      name: input.name,
+      color: input.color,
+      lead: memberIdByName(input.lead),
+      members: (input.members ?? [])
+        .filter((name) => name !== input.lead)
+        .map(memberIdByName)
+        .filter(Boolean),
+    }).then(reloadLive);
+  }
+
   const id = crews.reduce((max, item) => Math.max(max, item.id), 0) + 1;
   const newCrew = {
     id,
@@ -335,15 +554,37 @@ export const addCrew = (input) => {
 };
 
 export const updateCrew = (id, patch) => {
+  if (isLiveMode()) {
+    const current = crews.find((crew) => crew.id === id) ?? {};
+    const next = { ...current, ...patch };
+    return updateCrewApi(id, {
+      name: next.name,
+      color: next.color,
+      lead: memberIdByName(next.lead),
+      members: (next.members ?? [])
+        .filter((name) => name !== next.lead)
+        .map(memberIdByName)
+        .filter(Boolean),
+    }).then(reloadLive);
+  }
+
   commitCrews(crews.map((crew) => (crew.id === id ? { ...crew, ...patch } : crew)));
 };
 
 export const removeCrew = (id) => {
+  if (isLiveMode()) {
+    return removeCrewApi(id).then(reloadLive);
+  }
+
   commitCrews(crews.filter((crew) => crew.id !== id));
 };
 
-/** Restores members and crews to the seeded dataset (Profile → Danger Zone). */
+/**
+ * Restores members and crews to the seeded dataset (Profile → Danger Zone).
+ * Demo only — there is nothing to reset a company's real team to.
+ */
 export const resetTeam = () => {
+  if (isLiveMode()) return;
   commitMembers(SEED_MEMBERS);
   commitCrews(SEED_CREWS);
 };

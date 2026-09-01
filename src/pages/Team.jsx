@@ -1,12 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Pencil, Trash2 } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
 import { AddMemberModal } from '../components/addMemberModal';
 import { CreateCrewModal } from '../components/createCrewModal';
+import { ConfirmDialog } from '../components/profile/ConfirmDialog';
+import { Pagination } from '../components/Pagination';
 import {
   useTeamMembers,
   useCrews,
+  useTeamLoaded,
+  fetchMembersPage,
   addTeamMember,
   updateTeamMember,
   removeTeamMember,
@@ -16,8 +20,19 @@ import {
   crewColor,
 } from '../data/team';
 import { initials } from '../data/customers';
+import { isLiveMode } from '../appMode';
+import { getErrorMessage } from '../api/client';
+import { MEMBER_ROLE_OPTIONS, getMemberApi } from '../api/users';
 import glow from '../assets/button-glow.svg';
 import './Team.css';
+
+/**
+ * Live mode only ever creates technicians — a crew lead is promoted when a
+ * crew is built around them, and the API refuses to promote anyone who isn't
+ * currently a technician. An existing lead still shows their own role while
+ * being edited.
+ */
+const [TECHNICIAN_OPTION, CREW_LEAD_OPTION] = MEMBER_ROLE_OPTIONS;
 
 const getCrewColor = (crewName, crewsList) => {
   const found = crewsList.find(
@@ -30,6 +45,8 @@ const Team = () => {
   const navigate = useNavigate();
   const members = useTeamMembers();
   const crews = useCrews();
+  const loaded = useTeamLoaded();
+  const live = isLiveMode();
 
   const [activeTab, setActiveTab] = useState('members'); // 'members' | 'crews'
   const [query, setQuery] = useState('');
@@ -40,18 +57,53 @@ const Team = () => {
   const [crewModalOpen, setCrewModalOpen] = useState(false);
   const [editingCrew, setEditingCrew] = useState(null);
 
-  const filteredMembers = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    if (!term) return members;
-    return members.filter(
-      (m) =>
-        m.name.toLowerCase().includes(term) ||
-        m.role.toLowerCase().includes(term) ||
-        m.email.toLowerCase().includes(term) ||
-        m.phone.includes(term) ||
-        m.crew.toLowerCase().includes(term),
-    );
-  }, [members, query]);
+  const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState('');
+  const [pageError, setPageError] = useState('');
+
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+  const [memberPage, setMemberPage] = useState({
+    items: [],
+    pagination: { page: 1, limit: 20, totalCount: 0, totalPages: 0 },
+  });
+  const [pageLoading, setPageLoading] = useState(true);
+
+  // Typing shouldn't fire a request per keystroke against the API.
+  const [search, setSearch] = useState('');
+  useEffect(() => {
+    const id = setTimeout(() => setSearch(query), 300);
+    return () => clearTimeout(id);
+  }, [query]);
+
+  // A narrower result set can leave the current page past the end.
+  useEffect(() => {
+    setPage(1);
+  }, [search, limit, activeTab]);
+
+  /**
+   * The members table is paged by the API (`GET /users/get` takes page/limit
+   * and answers with the totals); the demo store pages the same shape locally.
+   * Crew names are resolved from the loaded crews, so the page is re-read when
+   * those change.
+   */
+  const loadMembers = useCallback(async () => {
+    setPageLoading(true);
+    try {
+      setMemberPage(await fetchMembersPage({ page, limit, search }));
+    } catch (error) {
+      setPageError(getErrorMessage(error, 'Could not load your team.'));
+    } finally {
+      setPageLoading(false);
+    }
+  }, [page, limit, search, crews]);
+
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
+
+  const pagedMembers = memberPage.items;
+  const memberPagination = memberPage.pagination;
 
   const filteredCrews = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -64,27 +116,157 @@ const Team = () => {
     );
   }, [crews, query]);
 
-  const handleSaveMember = (formData) => {
-    if (editingMember) {
-      updateTeamMember(editingMember.id, formData);
-    } else {
-      addTeamMember(formData);
+  // `GET /crews/` has no page/limit — it returns the whole list — so the crews
+  // tab is paged here, over what's already loaded.
+  const { pagedCrews, crewPagination } = useMemo(() => {
+    const totalCount = filteredCrews.length;
+    const start = (page - 1) * limit;
+
+    return {
+      pagedCrews: filteredCrews.slice(start, start + limit),
+      crewPagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages: Math.ceil(totalCount / limit) || 0,
+      },
+    };
+  }, [filteredCrews, page, limit]);
+
+  // Deleting the last row of the last page would otherwise strand the table
+  // past the end of the list.
+  const activePagination =
+    activeTab === 'members' ? memberPagination : crewPagination;
+
+  useEffect(() => {
+    const { totalPages } = activePagination;
+    if (totalPages > 0 && page > totalPages) setPage(totalPages);
+  }, [activePagination, page]);
+
+  // Saves go through the store, which writes to the API in live mode, so the
+  // dialog stays open on failure with the reason shown inside it.
+  const handleSaveMember = async (formData) => {
+    setSaving(true);
+    setModalError('');
+    try {
+      if (editingMember) {
+        await updateTeamMember(editingMember.id, formData);
+      } else {
+        await addTeamMember(formData);
+      }
+      setMemberModalOpen(false);
+      setEditingMember(null);
+      await loadMembers();
+    } catch (error) {
+      setModalError(getErrorMessage(error, 'Could not save this member.'));
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const handleSaveCrew = async (formData) => {
+    setSaving(true);
+    setModalError('');
+    try {
+      if (editingCrew) {
+        await updateCrew(editingCrew.id, formData);
+      } else {
+        await addCrew(formData);
+      }
+      setCrewModalOpen(false);
+      setEditingCrew(null);
+    } catch (error) {
+      setModalError(getErrorMessage(error, 'Could not save this crew.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { type: 'member'|'crew', item: object }
+
+  const handleDeleteMember = (member) => {
+    setDeleteConfirm({ type: 'member', item: member });
+  };
+
+  const confirmDeleteMember = async (member) => {
+    setDeleteConfirm(null);
+    setPageError('');
+    try {
+      await removeTeamMember(member.id);
+      await loadMembers();
+    } catch (error) {
+      setPageError(getErrorMessage(error, 'Could not remove this member.'));
+    }
+  };
+
+  const handleDeleteCrew = (crew) => {
+    setDeleteConfirm({ type: 'crew', item: crew });
+  };
+
+  const confirmDeleteCrew = async (crew) => {
+    setDeleteConfirm(null);
+    setPageError('');
+    try {
+      await removeCrew(crew.id);
+    } catch (error) {
+      setPageError(getErrorMessage(error, 'Could not delete this crew.'));
+    }
+  };
+
+  const closeMemberModal = () => {
     setMemberModalOpen(false);
     setEditingMember(null);
+    setModalError('');
   };
 
-  const handleSaveCrew = (formData) => {
-    if (editingCrew) {
-      updateCrew(editingCrew.id, formData);
-    } else {
-      addCrew(formData);
-    }
+  const closeCrewModal = () => {
     setCrewModalOpen(false);
     setEditingCrew(null);
+    setModalError('');
   };
 
-  const rosterNames = useMemo(() => members.map((m) => m.name), [members]);
+  /**
+   * Someone leads or belongs to exactly one crew, so only the unassigned are
+   * offered — plus whoever is already on the crew being edited.
+   */
+  const rosterNames = useMemo(() => {
+    if (!live) return members.map((m) => m.name);
+
+    const current = new Set(
+      editingCrew ? [editingCrew.lead, ...(editingCrew.members ?? [])] : [],
+    );
+
+    return members
+      .filter((m) => !m.crew || m.crew === 'Solo' || current.has(m.name))
+      .map((m) => m.name);
+  }, [live, members, editingCrew]);
+
+  const takenColors = useMemo(
+    () => crews.filter((c) => c.id !== editingCrew?.id).map((c) => c.color),
+    [crews, editingCrew],
+  );
+
+  /**
+   * Opens the edit form on the server's current values rather than the row the
+   * table happens to be holding. The record comes back with a crew id, which is
+   * mapped to the name the form binds to.
+   */
+  const loadEditingMember = useCallback(async () => {
+    const fresh = await getMemberApi(editingMember.id);
+
+    return {
+      ...fresh,
+      role: fresh.roleLabel,
+      crew: crews.find((crew) => crew.id === fresh.crew)?.name ?? 'Solo',
+    };
+  }, [editingMember, crews]);
+
+  const roleOptions = useMemo(() => {
+    if (!live) return undefined;
+    return editingMember?.role === CREW_LEAD_OPTION.id
+      ? [TECHNICIAN_OPTION, CREW_LEAD_OPTION]
+      : [TECHNICIAN_OPTION];
+  }, [live, editingMember]);
 
   return (
     <AppShell>
@@ -93,7 +275,7 @@ const Team = () => {
           <h1 className="page-title__heading">Team</h1>
           <p className="page-title__subheading">
             {activeTab === 'members'
-              ? `${members.length} team members`
+              ? `${memberPagination.totalCount} team members`
               : `${crews.length} crews`}
           </p>
         </div>
@@ -168,6 +350,12 @@ const Team = () => {
             )}
           </div>
 
+          {pageError && (
+            <p className="team__error" role="alert">
+              {pageError}
+            </p>
+          )}
+
           <div className="team__table-wrap">
             {activeTab === 'members' ? (
               <table className="team__table">
@@ -196,13 +384,13 @@ const Team = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredMembers.map((member, index) => (
+                  {pagedMembers.map((member, index) => (
                     <tr
                       className="team__row cursor-pointer"
                       key={member.id}
                       onClick={() => navigate(`/team/${member.id}`)}
                     >
-                      <td>{index + 1}</td>
+                      <td>{(page - 1) * limit + index + 1}</td>
                       <td>
                         <span className="team__person">
                           <span className="avatar-initials avatar-initials--sm">
@@ -254,7 +442,7 @@ const Team = () => {
                           <button
                             type="button"
                             className="team__action-btn team__action-btn--danger"
-                            onClick={() => removeTeamMember(member.id)}
+                            onClick={() => handleDeleteMember(member)}
                             aria-label={`Delete ${member.name}`}
                           >
                             <Trash2 size={16} strokeWidth={2} />
@@ -264,10 +452,14 @@ const Team = () => {
                     </tr>
                   ))}
 
-                  {filteredMembers.length === 0 && (
+                  {pagedMembers.length === 0 && (
                     <tr>
                       <td className="team__empty" colSpan={8}>
-                        No team members match your search.
+                        {pageLoading
+                          ? 'Loading your team…'
+                          : query.trim()
+                            ? 'No team members match your search.'
+                            : 'No team members yet. Add your first one to get started.'}
                       </td>
                     </tr>
                   )}
@@ -298,9 +490,9 @@ const Team = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredCrews.map((crew, index) => (
+                  {pagedCrews.map((crew, index) => (
                     <tr className="team__row" key={crew.id}>
-                      <td>{index + 1}</td>
+                      <td>{(page - 1) * limit + index + 1}</td>
                       <td>
                         <span className="team__crew-badge">
                           <span
@@ -356,7 +548,7 @@ const Team = () => {
                           <button
                             type="button"
                             className="team__action-btn team__action-btn--danger"
-                            onClick={() => removeCrew(crew.id)}
+                            onClick={() => handleDeleteCrew(crew)}
                             aria-label={`Delete ${crew.name}`}
                           >
                             <Trash2 size={16} strokeWidth={2} />
@@ -366,10 +558,14 @@ const Team = () => {
                     </tr>
                   ))}
 
-                  {filteredCrews.length === 0 && (
+                  {pagedCrews.length === 0 && (
                     <tr>
                       <td className="team__empty" colSpan={7}>
-                        No crews match your search.
+                        {!loaded
+                          ? 'Loading your crews…'
+                          : query.trim()
+                            ? 'No crews match your search.'
+                            : 'No crews yet. Create one to group your technicians.'}
                       </td>
                     </tr>
                   )}
@@ -377,6 +573,15 @@ const Team = () => {
               </table>
             )}
           </div>
+
+          <Pagination
+            {...activePagination}
+            page={page}
+            limit={limit}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+            disabled={activeTab === 'members' && pageLoading}
+          />
         </div>
       </div>
 
@@ -385,11 +590,13 @@ const Team = () => {
           key={editingMember ? editingMember.id : 'new-member'}
           member={editingMember}
           crews={crews}
+          roleOptions={roleOptions}
+          loadMember={live && editingMember ? loadEditingMember : undefined}
+          requireContact={live}
+          saving={saving}
+          error={modalError}
           onSave={handleSaveMember}
-          onClose={() => {
-            setMemberModalOpen(false);
-            setEditingMember(null);
-          }}
+          onClose={closeMemberModal}
         />
       )}
 
@@ -398,11 +605,33 @@ const Team = () => {
           key={editingCrew ? editingCrew.id : 'new-crew'}
           crew={editingCrew}
           roster={rosterNames}
+          takenColors={takenColors}
+          saving={saving}
+          error={modalError}
           onSave={handleSaveCrew}
-          onClose={() => {
-            setCrewModalOpen(false);
-            setEditingCrew(null);
-          }}
+          onClose={closeCrewModal}
+        />
+      )}
+
+      {deleteConfirm?.type === 'member' && (
+        <ConfirmDialog
+          title="Remove Team Member"
+          description={`Are you sure you want to remove ${deleteConfirm.item.name} from your team? This action cannot be undone.`}
+          confirmLabel="Remove Member"
+          cancelLabel="Cancel"
+          onConfirm={() => confirmDeleteMember(deleteConfirm.item)}
+          onCancel={() => setDeleteConfirm(null)}
+        />
+      )}
+
+      {deleteConfirm?.type === 'crew' && (
+        <ConfirmDialog
+          title="Delete Crew"
+          description={`Are you sure you want to delete ${deleteConfirm.item.name || 'this crew'}? This action cannot be undone.`}
+          confirmLabel="Delete Crew"
+          cancelLabel="Cancel"
+          onConfirm={() => confirmDeleteCrew(deleteConfirm.item)}
+          onCancel={() => setDeleteConfirm(null)}
         />
       )}
     </AppShell>

@@ -109,6 +109,10 @@
   @apply h-[72px] px-4 text-center text-sm font-normal text-black-200;
 }
 
+.team__error {
+  @apply w-full rounded-[12px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600;
+}
+
 /* Column widths */
 .team__col--id {
   width: 80px;

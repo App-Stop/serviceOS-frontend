@@ -44,6 +44,42 @@
   @apply text-xs font-normal text-black-200;
 }
 
+.form-modal__error {
+  @apply px-3.5 py-2.5 rounded-[20px] text-sm font-normal text-danger;
+  background: rgb(243 0 0 / 0.08);
+}
+
+/* ── Grouped fields (addresses) ────────────────────────── */
+
+.form-modal__section {
+  @apply flex flex-col gap-3 pt-4 border-t border-neutral-200;
+}
+
+.form-modal__section-head {
+  @apply flex items-center justify-between gap-3;
+}
+
+.form-modal__section-title {
+  @apply text-sm font-semibold text-neutral-900;
+}
+
+.form-modal__checkbox {
+  @apply flex items-center gap-2 text-xs font-normal text-black-200 cursor-pointer;
+}
+
+.form-modal__checkbox input {
+  @apply h-4 w-4 shrink-0 cursor-pointer accent-neutral-900;
+}
+
+/**
+ * A form long enough to outgrow the viewport scrolls its own body. The shell
+ * keeps `overflow: visible` so dropdowns can still escape it.
+ */
+.form-modal--tall .form-modal__body {
+  @apply overflow-y-auto pr-1;
+  max-height: min(60vh, 520px);
+}
+
 /* Only a nudge — the word count is guidance, not a hard stop. */
 .form-modal__hint--over {
   @apply text-danger;

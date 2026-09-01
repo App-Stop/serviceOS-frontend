@@ -23,11 +23,25 @@ const INDUSTRIES = [
 
 const TEAM_SIZES = ['2-5', '6-15', '16-50', '50+'];
 
-// Keep the phone field to digits and the usual formatting characters.
-const sanitizePhone = (value) => value.replace(/[^0-9+()\-. ]/g, '');
+// `Company.phone` is stored as a number, so the field is kept to digits with an
+// optional leading "+" rather than accepting display formatting that can't be
+// sent as-is.
+const sanitizePhone = (value) => {
+  const digits = value.replace(/[^0-9]/g, '').slice(0, 14);
+  return value.trimStart().startsWith('+') ? `+${digits}` : digits;
+};
 
 export const StepBusiness = ({ data, update, onNext }) => {
-  const canContinue = Boolean(data.company && data.phone && data.email && data.serviceArea);
+  // Every one of these is required by the onboarding endpoint — including the
+  // address, industry and team size, which the layout doesn't mark with a star.
+  const canContinue = Boolean(
+    data.company.trim().length >= 2 &&
+      data.phone &&
+      data.serviceArea.trim() &&
+      data.address.trim() &&
+      data.industry &&
+      data.teamSize,
+  );
 
   return (
     <OnboardingShell
@@ -58,7 +72,6 @@ export const StepBusiness = ({ data, update, onNext }) => {
         <div className="onb-row">
           <InputGroup
             label="Email"
-            required
             type="email"
             placeholder="name@company.com"
             value={data.email}
@@ -75,13 +88,14 @@ export const StepBusiness = ({ data, update, onNext }) => {
 
         <InputGroup
           label="Business Address"
+          required
           placeholder="Enter your business’s address"
           value={data.address}
           onChange={(e) => update({ address: e.target.value })}
         />
 
         <div className="input-group">
-          <span className="field-label">Industry</span>
+          <span className="field-label">Industry*</span>
           <div className="onb-chip-group">
             {INDUSTRIES.map(({ label, icon }) => (
               <Chip
@@ -96,7 +110,7 @@ export const StepBusiness = ({ data, update, onNext }) => {
         </div>
 
         <div className="input-group">
-          <span className="field-label">Team Size</span>
+          <span className="field-label">Team Size*</span>
           <div className="onb-chip-group">
             {TEAM_SIZES.map((size) => (
               <Chip

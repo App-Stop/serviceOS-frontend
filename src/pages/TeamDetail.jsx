@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -18,6 +18,9 @@ import { AddMemberModal } from '../components/addMemberModal';
 import { AssignJobModal } from '../components/AssignJobModal';
 import { useTeamMember, useCrews, updateTeamMember } from '../data/team';
 import { initials } from '../data/customers';
+import { isLiveMode } from '../appMode';
+import { getErrorMessage } from '../api/client';
+import { getMemberApi } from '../api/users';
 import glow from '../assets/button-glow.svg';
 import './TeamDetail.css';
 
@@ -94,6 +97,27 @@ const TeamDetail = () => {
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState('');
+  // Job assignment is part of the (still demo-only) jobs dataset, so the
+  // action is hidden rather than offered against real data it can't write to.
+  const live = isLiveMode();
+
+  // Declared before the not-found guard below — every hook has to run on each
+  // render, whichever branch the component takes.
+  const memberId = member?.id;
+
+  // Same as the Team page: the edit form opens on freshly read values, with
+  // the crew id mapped back to the name the form binds to.
+  const loadMember = useCallback(async () => {
+    const fresh = await getMemberApi(memberId);
+
+    return {
+      ...fresh,
+      role: fresh.roleLabel,
+      crew: crews.find((crew) => crew.id === fresh.crew)?.name ?? 'Solo',
+    };
+  }, [memberId, crews]);
 
   if (!member) {
     return (
@@ -117,14 +141,30 @@ const TeamDetail = () => {
     );
   }
 
-  const jobHistory = member.jobHistory?.length ? member.jobHistory : defaultJobHistory;
+  // The sample fallbacks stand in for a thin demo record; against real data an
+  // empty history has to stay empty rather than borrow someone else's jobs.
+  const jobHistory = member.jobHistory?.length
+    ? member.jobHistory
+    : live
+      ? []
+      : defaultJobHistory;
   const recentActivity = member.recentActivity?.length
     ? member.recentActivity
-    : defaultActivity;
+    : live
+      ? []
+      : defaultActivity;
 
-  const handleSaveMember = (formData) => {
-    updateTeamMember(member.id, formData);
-    setEditModalOpen(false);
+  const handleSaveMember = async (formData) => {
+    setSaving(true);
+    setModalError('');
+    try {
+      await updateTeamMember(member.id, formData);
+      setEditModalOpen(false);
+    } catch (error) {
+      setModalError(getErrorMessage(error, 'Could not save this member.'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAssignJob = ({ job }) => {
@@ -158,15 +198,17 @@ const TeamDetail = () => {
             </p>
           </div>
 
-          <button
-            type="button"
-            className="cta-button"
-            onClick={() => setAssignModalOpen(true)}
-          >
-            <img className="cta-button__glow" src={glow} alt="" aria-hidden="true" />
-            <Plus size={20} strokeWidth={2} />
-            <span className="cta-button__label">Assign Job</span>
-          </button>
+          {!live && (
+            <button
+              type="button"
+              className="cta-button"
+              onClick={() => setAssignModalOpen(true)}
+            >
+              <img className="cta-button__glow" src={glow} alt="" aria-hidden="true" />
+              <Plus size={20} strokeWidth={2} />
+              <span className="cta-button__label">Assign Job</span>
+            </button>
+          )}
         </div>
 
         <div className="team-detail__metrics">
@@ -230,6 +272,9 @@ const TeamDetail = () => {
               <h2 className="team-detail__card-title">Job History</h2>
             </div>
             <div className="team-detail__job-list">
+              {jobHistory.length === 0 && (
+                <p className="team-detail__empty">No jobs recorded yet.</p>
+              )}
               {jobHistory.map((job) => (
                 <div key={job.id} className="team-detail__job-item">
                   <div className="team-detail__job-info">
@@ -312,6 +357,9 @@ const TeamDetail = () => {
                 <h2 className="team-detail__card-title">Recent Activity</h2>
               </div>
               <div className="team-detail__activity-list">
+                {recentActivity.length === 0 && (
+                  <p className="team-detail__empty">No activity yet.</p>
+                )}
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="team-detail__activity-item">
                     <div
@@ -348,8 +396,15 @@ const TeamDetail = () => {
           key={member.id}
           member={member}
           crews={crews}
+          loadMember={live ? loadMember : undefined}
+          requireContact={live}
+          saving={saving}
+          error={modalError}
           onSave={handleSaveMember}
-          onClose={() => setEditModalOpen(false)}
+          onClose={() => {
+            setEditModalOpen(false);
+            setModalError('');
+          }}
         />
       )}
 

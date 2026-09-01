@@ -1,0 +1,54 @@
+@reference '../index.css';
+
+.pagination {
+  @apply flex w-full flex-wrap items-center justify-between gap-4 pt-1;
+}
+
+.pagination__summary {
+  @apply text-sm font-normal text-black-200;
+}
+
+.pagination__controls {
+  @apply flex flex-wrap items-center gap-2.5;
+}
+
+.pagination__pages {
+  @apply flex items-center gap-1;
+}
+
+.pagination__nav,
+.pagination__page {
+  @apply flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-white px-2.5 text-sm font-medium text-neutral-900 transition-colors;
+}
+
+.pagination__nav:hover:not(:disabled),
+.pagination__page:hover:not(:disabled) {
+  @apply bg-neutral-100;
+}
+
+.pagination__nav:disabled,
+.pagination__page:disabled {
+  @apply cursor-not-allowed opacity-40;
+}
+
+.pagination__page--active {
+  @apply border-neutral-900 bg-neutral-900 text-neutral-50;
+}
+
+.pagination__page--active:hover:not(:disabled) {
+  @apply bg-neutral-900;
+}
+
+.pagination__gap {
+  @apply px-1 text-sm text-black-200;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    @apply flex-col items-stretch gap-3;
+  }
+
+  .pagination__controls {
+    @apply justify-between;
+  }
+}

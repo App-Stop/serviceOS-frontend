@@ -31,33 +31,55 @@ const SWATCH_CLASS = {
 const emptyCrew = { name: '', lead: '', members: [], color: 'pink' };
 
 /**
- * Create / edit a crew. `roster` is the list of people available to lead or join;
- * `crew` prefills the form when editing.
+ * Create / edit a crew.
+ *
+ * `roster` is the list of people available to lead or join, given either as
+ * plain names or as `{ id, label }` when the stored value has to be an id
+ * rather than the visible name. `takenColors` locks out swatches already used
+ * by another crew, which the API rejects as a duplicate.
  */
-export const CreateCrewModal = ({ crew, roster = [], onSave, onClose }) => {
+export const CreateCrewModal = ({
+  crew,
+  roster = [],
+  takenColors = [],
+  saving = false,
+  error = '',
+  onSave,
+  onClose,
+}) => {
   // Mounted fresh per open (keyed by crew id at the call site).
   const [form, setForm] = useState(() => ({ ...emptyCrew, ...crew }));
   const [query, setQuery] = useState('');
 
-  const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
-  const canSave = Boolean(form.lead);
+  const people = roster.map((entry) =>
+    typeof entry === 'string' ? { id: entry, label: entry } : entry,
+  );
+  const labelOf = (id) => people.find((person) => person.id === id)?.label ?? id;
 
-  const suggestions = roster.filter(
-    (name) => !form.members.includes(name) && name.toLowerCase().includes(query.toLowerCase()),
+  const update = (patch) => setForm((prev) => ({ ...prev, ...patch }));
+  const canSave = Boolean(form.name.trim() && form.lead && !saving);
+
+  // A person leads or belongs to exactly one crew, so the lead can never also
+  // sit in the member list.
+  const suggestions = people.filter(
+    (person) =>
+      !form.members.includes(person.id) &&
+      person.id !== form.lead &&
+      person.label.toLowerCase().includes(query.toLowerCase()),
   );
 
-  const addMember = (name) => {
-    update({ members: [...form.members, name] });
+  const addMember = (id) => {
+    update({ members: [...form.members, id] });
     setQuery('');
   };
 
-  const removeMember = (name) =>
-    update({ members: form.members.filter((m) => m !== name) });
+  const removeMember = (id) =>
+    update({ members: form.members.filter((m) => m !== id) });
 
   const handleMemberKeyDown = (e) => {
     if (e.key === 'Enter' && suggestions.length) {
       e.preventDefault();
-      addMember(suggestions[0]);
+      addMember(suggestions[0].id);
     }
     if (e.key === 'Backspace' && !query && form.members.length) {
       removeMember(form.members[form.members.length - 1]);
@@ -88,8 +110,15 @@ export const CreateCrewModal = ({ crew, roster = [], onSave, onClose }) => {
         </div>
 
         <div className="onb-modal-body">
+          {error && (
+            <p className="onb-error" role="alert">
+              {error}
+            </p>
+          )}
+
           <InputGroup
             label="Crew Name"
+            required
             placeholder="e.g. John’s Crew"
             value={form.name}
             onChange={(e) => update({ name: e.target.value })}
@@ -99,7 +128,7 @@ export const CreateCrewModal = ({ crew, roster = [], onSave, onClose }) => {
             <span className="field-label">Crew lead*</span>
             <Select
               placeholder="Select a crew lead"
-              options={roster}
+              options={people.map((person) => ({ value: person.id, label: person.label }))}
               value={form.lead}
               onChange={(e) => update({ lead: e.target.value })}
             />
@@ -108,14 +137,14 @@ export const CreateCrewModal = ({ crew, roster = [], onSave, onClose }) => {
           <div className="input-group">
             <span className="field-label">Crew Members</span>
             <div className="onb-token-field">
-              {form.members.map((name) => (
-                <span key={name} className="onb-token">
-                  <span className="px-[var(--spacing-xxs)]">{name}</span>
+              {form.members.map((id) => (
+                <span key={id} className="onb-token">
+                  <span className="px-[var(--spacing-xxs)]">{labelOf(id)}</span>
                   <button
                     type="button"
                     className="onb-token-remove"
-                    aria-label={`Remove ${name}`}
-                    onClick={() => removeMember(name)}
+                    aria-label={`Remove ${labelOf(id)}`}
+                    onClick={() => removeMember(id)}
                   >
                     <X className="size-[16px]" strokeWidth={2} />
                   </button>
@@ -132,14 +161,14 @@ export const CreateCrewModal = ({ crew, roster = [], onSave, onClose }) => {
 
             {query && suggestions.length > 0 && (
               <div className="onb-token-suggestions">
-                {suggestions.map((name) => (
+                {suggestions.map((person) => (
                   <button
-                    key={name}
+                    key={person.id}
                     type="button"
                     className="onb-token-suggestion"
-                    onClick={() => addMember(name)}
+                    onClick={() => addMember(person.id)}
                   >
-                    {name}
+                    {person.label}
                   </button>
                 ))}
               </div>
@@ -149,24 +178,28 @@ export const CreateCrewModal = ({ crew, roster = [], onSave, onClose }) => {
           <div className="onb-field-block">
             <span className="field-label">Crew Color</span>
             <div className="onb-swatch-group">
-              {CREW_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  aria-label={color}
-                  aria-pressed={form.color === color}
-                  onClick={() => update({ color })}
-                  className={`onb-swatch ${SWATCH_CLASS[color]} ${
-                    form.color === color ? 'onb-swatch-active' : ''
-                  }`}
-                />
-              ))}
+              {CREW_COLORS.map((color) => {
+                const taken = takenColors.includes(color) && form.color !== color;
+                return (
+                  <button
+                    key={color}
+                    type="button"
+                    aria-label={taken ? `${color} (already used)` : color}
+                    aria-pressed={form.color === color}
+                    disabled={taken}
+                    onClick={() => update({ color })}
+                    className={`onb-swatch ${SWATCH_CLASS[color]} ${
+                      form.color === color ? 'onb-swatch-active' : ''
+                    } ${taken ? 'onb-swatch-taken' : ''}`}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
 
         <div className="onb-modal-footer">
-          <button type="button" className="onb-nav-btn" onClick={onClose}>
+          <button type="button" className="onb-nav-btn" disabled={saving} onClick={onClose}>
             <span className="px-[var(--spacing-xxs)]">Cancel</span>
           </button>
 
@@ -178,7 +211,7 @@ export const CreateCrewModal = ({ crew, roster = [], onSave, onClose }) => {
           >
             <span className="onb-glow" />
             <span className="relative px-[var(--spacing-xxs)]">
-              {crew?.id ? 'Update' : 'Create'}
+              {saving ? 'Saving…' : crew?.id ? 'Update' : 'Create'}
             </span>
           </button>
         </div>
