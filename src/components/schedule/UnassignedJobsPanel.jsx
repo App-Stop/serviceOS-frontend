@@ -40,16 +40,31 @@ export const UnassignedJobsPanel = ({ jobs = [], onAssign, onClose }) => {
 
         <div className="schedule-panel__list">
           {jobs.map((job) => (
-            <article className="schedule-panel__card" key={job.id}>
+            <article className="schedule-panel__card" key={job.assignmentId ?? job.id}>
               <div className="schedule-panel__summary">
                 <h3 className="schedule-panel__job">{job.title}</h3>
 
-                <Link className="schedule-panel__customer" to={`/customers/${job.customerId}`}>
-                  <span className="avatar-initials schedule-panel__avatar">
-                    {initials(job.customer)}
-                  </span>
-                  {job.customer}
-                </Link>
+                {/* The schedule payload names the customer but doesn't carry
+                    their id, so this only links through when one is known. */}
+                {job.customer &&
+                  (job.customerId ? (
+                    <Link
+                      className="schedule-panel__customer"
+                      to={`/customers/${job.customerId}`}
+                    >
+                      <span className="avatar-initials schedule-panel__avatar">
+                        {initials(job.customer)}
+                      </span>
+                      {job.customer}
+                    </Link>
+                  ) : (
+                    <span className="schedule-panel__customer">
+                      <span className="avatar-initials schedule-panel__avatar">
+                        {initials(job.customer)}
+                      </span>
+                      {job.customer}
+                    </span>
+                  ))}
 
                 <p className="schedule-panel__when">
                   {job.date} {job.time}

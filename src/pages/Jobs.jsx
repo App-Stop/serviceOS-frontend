@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Pencil,
+  Trash2,
   ArrowUpRight,
 } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
@@ -13,95 +14,205 @@ import { JobStatusChip, JobPriorityBadge } from '../components/JobStatusChip';
 import { JobTimeline } from '../components/JobTimeline';
 import { JobFormModal } from '../components/JobFormModal';
 import { FilterDropdown } from '../components/FilterDropdown';
+import { ConfirmDialog } from '../components/profile/ConfirmDialog';
+import { Pagination } from '../components/Pagination';
 import {
-  useJobs,
+  fetchJob,
+  fetchJobsPage,
   addJob,
   updateJob,
   setJobStatus,
   setJobPriority,
+  removeJob,
   formatBudget,
 } from '../data/jobs';
 import { initials, formatCurrency } from '../data/customers';
-import david from '../assets/avatars/david.png';
+import { getErrorMessage } from '../api/client';
 import glow from '../assets/button-glow.svg';
 import './Jobs.css';
 
-const photos = { david };
-
 /* Filter option lists, matching the Figma dropdowns. The status dot colours
-   come straight from the design; each entry maps to a status id in the store. */
+   come straight from the design; each id is the API's own status spelling. */
 
 const ranges = [
+  { id: 'all', label: 'All time', days: null },
   { id: 'week', label: 'This Week', days: 7 },
   { id: 'month', label: 'This Month', days: 31 },
   { id: 'quarter', label: 'Last 3 month', days: 92 },
   { id: 'year', label: 'This year', days: 366 },
-  { id: 'custom', label: 'Custom', days: Infinity },
 ];
 
 const statusFilters = [
   { id: 'all', label: 'All' },
   { id: 'scheduled', label: 'Scheduled', dot: '#f96c00' },
   { id: 'dispatched', label: 'Dispatched', dot: '#903bff' },
-  { id: 'enroute', label: 'En Route', dot: '#edba00' },
-  { id: 'onsite', label: 'In Progress', dot: '#0095ff' },
+  { id: 'en-route', label: 'En Route', dot: '#edba00' },
+  { id: 'in-progress', label: 'In Progress', dot: '#0095ff' },
   { id: 'completed', label: 'Completed', dot: '#00c064' },
   { id: 'cancelled', label: 'Cancelled', dot: '#f30000' },
 ];
 
-const parseDate = (value) => {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
 const DAY = 24 * 60 * 60 * 1000;
 
 /**
- * Windows the list by schedule date. The seeded jobs are all dated in the
- * future, so the window is measured from the earliest job on file rather than
- * from today — that keeps every option meaningful against the sample data.
+ * The API windows on `createdAt` with `dateFrom` / `dateTo`, so a range is
+ * expressed as a start instant N days back from now. "All time" sends nothing.
  */
-const withinRange = (job, range, anchor) => {
-  const span = ranges.find((option) => option.id === range)?.days ?? Infinity;
-  if (span === Infinity || !anchor) return true;
-  const date = parseDate(job.date);
-  return date ? (date - anchor) / DAY <= span : true;
+const rangeToDateFrom = (range) => {
+  const days = ranges.find((option) => option.id === range)?.days ?? null;
+  return days ? new Date(Date.now() - days * DAY).toISOString() : undefined;
 };
 
 const Jobs = () => {
   const navigate = useNavigate();
-  const jobs = useJobs();
+
   const [query, setQuery] = useState('');
-  const [range, setRange] = useState('week');
+  const [range, setRange] = useState('all');
   const [status, setStatus] = useState('all');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(20);
+
+  const [jobPage, setJobPage] = useState({
+    items: [],
+    pagination: { page: 1, limit: 20, totalCount: 0, totalPages: 0 },
+  });
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pageError, setPageError] = useState('');
+
   const [expandedId, setExpandedId] = useState(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState('');
+  const [deleting, setDeleting] = useState(null);
 
-  const visible = useMemo(() => {
-    const term = query.trim().toLowerCase();
-    const anchor = jobs
-      .map((job) => parseDate(job.date))
-      .filter(Boolean)
-      .sort((a, b) => a - b)[0];
+  // Typing shouldn't fire a request per keystroke against the API.
+  const [search, setSearch] = useState('');
+  useEffect(() => {
+    const id = setTimeout(() => setSearch(query), 300);
+    return () => clearTimeout(id);
+  }, [query]);
 
-    return jobs.filter((job) => {
-      const matchesStatus = status === 'all' || job.status === status;
-      const matchesTerm =
-        !term ||
-        job.title.toLowerCase().includes(term) ||
-        job.customer.toLowerCase().includes(term) ||
-        job.technician.toLowerCase().includes(term);
-      return matchesStatus && matchesTerm && withinRange(job, range, anchor);
-    });
-  }, [jobs, query, status, range]);
+  // A narrower result set can leave the current page past the end.
+  useEffect(() => {
+    setPage(1);
+  }, [search, status, range, limit]);
+
+  /**
+   * The board is paged by the API (`GET /jobs` takes search, status, the
+   * date window and page/limit, and answers with the totals); the demo store
+   * applies the same filters locally so the controls behave identically.
+   */
+  const loadJobs = useCallback(async () => {
+    setPageLoading(true);
+    setPageError('');
+    try {
+      setJobPage(
+        await fetchJobsPage({
+          page,
+          limit,
+          search,
+          status,
+          dateFrom: rangeToDateFrom(range),
+        }),
+      );
+    } catch (error) {
+      setPageError(getErrorMessage(error, 'Could not load your jobs.'));
+    } finally {
+      setPageLoading(false);
+    }
+  }, [page, limit, search, status, range]);
+
+  useEffect(() => {
+    loadJobs();
+  }, [loadJobs]);
+
+  const { items: jobs, pagination } = jobPage;
+
+  // Deleting the last row of the last page would otherwise strand the table.
+  useEffect(() => {
+    const { totalPages } = pagination;
+    if (totalPages > 0 && page > totalPages) setPage(totalPages);
+  }, [pagination, page]);
+
+  const closeForm = () => {
+    setFormOpen(false);
+    setEditing(null);
+    setModalError('');
+  };
+
+  // Saves go through the store, which writes to the API in live mode, so the
+  // dialog stays open on failure with the reason shown inside it.
+  const handleSave = async (values) => {
+    setSaving(true);
+    setModalError('');
+    try {
+      if (editing) {
+        await updateJob(editing.id, values);
+        closeForm();
+        await loadJobs();
+      } else {
+        const created = await addJob(values);
+        closeForm();
+        if (created?.id) navigate(`/jobs/${created.id}`);
+        else await loadJobs();
+      }
+    } catch (error) {
+      setModalError(getErrorMessage(error, 'Could not save this job.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /**
+   * Status and priority are written straight from the row. The API refuses a
+   * backward move or a change to a finished job, so a rejection is surfaced
+   * rather than left as a chip that silently snaps back.
+   */
+  const handleStatus = async (job, next) => {
+    setPageError('');
+    try {
+      await setJobStatus(job.id, next);
+      await loadJobs();
+    } catch (error) {
+      setPageError(getErrorMessage(error, 'Could not change this job’s status.'));
+    }
+  };
+
+  const handlePriority = async (job, next) => {
+    setPageError('');
+    try {
+      await setJobPriority(job.id, next);
+      await loadJobs();
+    } catch (error) {
+      setPageError(getErrorMessage(error, 'Could not change this job’s priority.'));
+    }
+  };
+
+  const confirmDelete = async (job) => {
+    setDeleting(null);
+    setPageError('');
+    try {
+      await removeJob(job.id);
+      await loadJobs();
+    } catch (error) {
+      setPageError(getErrorMessage(error, 'Could not cancel this job.'));
+    }
+  };
+
+  /** Opens the edit form on the server's current values for that job. */
+  const loadEditing = useCallback(() => fetchJob(editing.id), [editing]);
 
   return (
     <AppShell>
       <div className="app-shell__content">
         <div className="page-title">
           <h1 className="page-title__heading">Jobs</h1>
-          <p className="page-title__subheading">{jobs.length} Total Jobs</p>
+          <p className="page-title__subheading">
+            {pagination.totalCount === 1
+              ? '1 Total Job'
+              : `${pagination.totalCount} Total Jobs`}
+          </p>
         </div>
 
         <div className="jobs__body">
@@ -135,12 +246,26 @@ const Jobs = () => {
               </div>
             </div>
 
-            <button type="button" className="cta-button" onClick={() => setFormOpen(true)}>
+            <button
+              type="button"
+              className="cta-button"
+              onClick={() => {
+                setEditing(null);
+                setModalError('');
+                setFormOpen(true);
+              }}
+            >
               <img className="cta-button__glow" src={glow} alt="" aria-hidden="true" />
               <Plus size={20} strokeWidth={2} />
               <span className="cta-button__label">New Job</span>
             </button>
           </div>
+
+          {pageError && (
+            <p className="jobs__error" role="alert">
+              {pageError}
+            </p>
+          )}
 
           <div className="jobs__table-wrap">
             <table className="jobs__table">
@@ -165,7 +290,7 @@ const Jobs = () => {
                 </tr>
               </thead>
               <tbody>
-                {visible.map((job, index) => {
+                {jobs.map((job) => {
                   const expanded = expandedId === job.id;
                   return (
                     <React.Fragment key={job.id}>
@@ -173,51 +298,55 @@ const Jobs = () => {
                         className={`jobs__row${expanded ? ' jobs__row--expanded' : ''}`}
                         onClick={() => setExpandedId(expanded ? null : job.id)}
                       >
-                        <td>{index + 1}</td>
+                        <td>{job.jobIdNumber ? `#${job.jobIdNumber}` : '—'}</td>
                         <td>
                           <span className="jobs__title">{job.title}</span>
                         </td>
                         <td>
-                          <span className="jobs__person">
-                            <span className="avatar-initials avatar-initials--sm">
-                              {initials(job.customer)}
+                          {job.customer ? (
+                            <span className="jobs__person">
+                              <span className="avatar-initials avatar-initials--sm">
+                                {initials(job.customer)}
+                              </span>
+                              <span className="jobs__person-name">{job.customer}</span>
                             </span>
-                            <span className="jobs__person-name">{job.customer}</span>
-                          </span>
+                          ) : (
+                            <span className="text-black-200">—</span>
+                          )}
                         </td>
                         <td>
-                          <span className="jobs__schedule">
-                            {job.date}
-                            <span className="jobs__schedule-time">{job.time}</span>
-                          </span>
+                          {job.date ? (
+                            <span className="jobs__schedule">
+                              {job.date}
+                              <span className="jobs__schedule-time">{job.time}</span>
+                            </span>
+                          ) : (
+                            <span className="text-black-200">Unscheduled</span>
+                          )}
                         </td>
                         <td>
-                          <span className="jobs__person">
-                            {job.technicianPhoto ? (
-                              <img
-                                className="jobs__avatar"
-                                src={photos[job.technicianPhoto]}
-                                alt=""
-                              />
-                            ) : (
+                          {job.technician ? (
+                            <span className="jobs__person">
                               <span className="avatar-initials avatar-initials--sm">
                                 {initials(job.technician)}
                               </span>
-                            )}
-                            <span className="jobs__person-name">{job.technician}</span>
-                          </span>
+                              <span className="jobs__person-name">{job.technician}</span>
+                            </span>
+                          ) : (
+                            <span className="text-black-200">Unassigned</span>
+                          )}
                         </td>
                         <td onClick={(event) => event.stopPropagation()}>
                           <JobStatusChip
                             status={job.status}
-                            onChange={(next) => setJobStatus(job.id, next)}
+                            onChange={(next) => handleStatus(job, next)}
                           />
                         </td>
                         <td onClick={(event) => event.stopPropagation()}>
                           <span className="jobs__priority-cell">
                             <JobPriorityBadge
                               priority={job.priority}
-                              onChange={(next) => setJobPriority(job.id, next)}
+                              onChange={(next) => handlePriority(job, next)}
                             />
                             <button
                               type="button"
@@ -278,10 +407,22 @@ const Jobs = () => {
                                   <button
                                     type="button"
                                     className="job-panel__action"
-                                    onClick={() => setEditing(job)}
+                                    onClick={() => {
+                                      setEditing(job);
+                                      setModalError('');
+                                      setFormOpen(true);
+                                    }}
                                   >
                                     <Pencil size={20} strokeWidth={2} />
                                     Edit Job
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="job-panel__action job-panel__action--danger"
+                                    onClick={() => setDeleting(job)}
+                                  >
+                                    <Trash2 size={20} strokeWidth={2} />
+                                    Cancel Job
                                   </button>
                                   <button
                                     type="button"
@@ -303,38 +444,52 @@ const Jobs = () => {
                   );
                 })}
 
-                {visible.length === 0 && (
+                {jobs.length === 0 && (
                   <tr>
                     <td className="jobs__empty" colSpan={7}>
-                      No jobs match this view.
+                      {pageLoading
+                        ? 'Loading your jobs…'
+                        : query.trim() || status !== 'all' || range !== 'all'
+                          ? 'No jobs match this view.'
+                          : 'No jobs yet. Create your first one to get started.'}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            page={pagination.page}
+            limit={pagination.limit}
+            totalCount={pagination.totalCount}
+            totalPages={pagination.totalPages}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+            disabled={pageLoading}
+          />
         </div>
       </div>
 
       {formOpen && (
         <JobFormModal
-          onClose={() => setFormOpen(false)}
-          onSave={(values) => {
-            const created = addJob(values);
-            setFormOpen(false);
-            navigate(`/jobs/${created.id}`);
-          }}
+          job={editing ?? undefined}
+          saving={saving}
+          error={modalError}
+          loadJob={editing ? loadEditing : undefined}
+          onClose={closeForm}
+          onSave={handleSave}
         />
       )}
 
-      {editing && (
-        <JobFormModal
-          job={editing}
-          onClose={() => setEditing(null)}
-          onSave={(values) => {
-            updateJob(editing.id, values);
-            setEditing(null);
-          }}
+      {deleting && (
+        <ConfirmDialog
+          title="Cancel job"
+          description={`“${deleting.title}” will be cancelled and taken off the board. Its time entries and invoices stay on record.`}
+          confirmLabel="Cancel Job"
+          cancelLabel="Keep Job"
+          onCancel={() => setDeleting(null)}
+          onConfirm={() => confirmDelete(deleting)}
         />
       )}
     </AppShell>

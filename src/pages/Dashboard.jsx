@@ -19,6 +19,8 @@ import './Dashboard.css';
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeModal, setActiveModal] = useState(null);
+  const [savingJob, setSavingJob] = useState(false);
+  const [jobError, setJobError] = useState('');
   const [savingCustomer, setSavingCustomer] = useState(false);
   const [customerError, setCustomerError] = useState('');
 
@@ -63,12 +65,25 @@ const Dashboard = () => {
 
       {activeModal === 'job' && (
         <JobFormModal
-          onClose={() => setActiveModal(null)}
-          onSave={(values) => {
-            const created = addJob(values);
+          onClose={() => {
             setActiveModal(null);
-            if (created?.id) {
-              navigate(`/jobs/${created.id}`);
+            setJobError('');
+          }}
+          saving={savingJob}
+          error={jobError}
+          onSave={async (values) => {
+            setSavingJob(true);
+            setJobError('');
+            try {
+              const created = await addJob(values);
+              setActiveModal(null);
+              if (created?.id) {
+                navigate(`/jobs/${created.id}`);
+              }
+            } catch (error) {
+              setJobError(getErrorMessage(error, 'Could not save this job.'));
+            } finally {
+              setSavingJob(false);
             }
           }}
         />

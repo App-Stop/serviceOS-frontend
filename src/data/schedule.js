@@ -1,15 +1,21 @@
 /**
  * Schedule derivations.
  *
- * The schedule owns no store of its own — it is a read-only view over the job
- * and team stores. Swapping those seeds for API responses is enough to make
- * every view below live, so nothing here needs to change when the backend
- * lands. Only pure date helpers and read hooks belong in this file.
+ * In demo mode the schedule owns no store — it is a read-only view over the
+ * seeded job and team stores, bucketed by day here.
+ *
+ * In live mode it reads `GET /jobs/schedule` and `GET /jobs/schedule/roster`,
+ * which do that bucketing server-side over a date window. `useScheduleView`
+ * below is the single entry point that serves whichever mode is active, so the
+ * board's components take their data as props and never know the difference.
  */
 
-import { useMemo } from 'react';
-import { useJobs } from './jobs';
-import { useTeamMembers, useCrews } from './team';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useJobsSnapshot } from './jobs';
+import { useTeamMembersSnapshot, useCrewsSnapshot } from './team';
+import { isLiveMode } from '../appMode';
+import { fetchScheduleWindowApi, getScheduleRosterApi } from '../api/schedule';
+import { getErrorMessage } from '../api/client';
 
 /* ── View vocabulary ───────────────────────────────────── */
 
@@ -26,8 +32,8 @@ export const SCHEDULE_VIEWS = [
 export const SCHEDULE_STATUSES = [
   { id: 'scheduled', label: 'Scheduled' },
   { id: 'dispatched', label: 'Dispatched' },
-  { id: 'enroute', label: 'En Route' },
-  { id: 'onsite', label: 'On Site' },
+  { id: 'en-route', label: 'En Route' },
+  { id: 'in-progress', label: 'In Progress' },
   { id: 'completed', label: 'Completed' },
   { id: 'cancelled', label: 'Cancelled' },
 ];
@@ -200,13 +206,105 @@ export const buildMonthGrid = (anchor) => {
 
 const byTime = (a, b) => parseJobTime(a.time) - parseJobTime(b.time);
 
-/** Every job bucketed by ISO date and sorted by start time within the day. */
-export const useJobsByDate = () => {
-  const jobs = useJobs();
+/* ── The board's view model ────────────────────────────── */
 
-  return useMemo(() => {
+/** Days each view needs, and where its window starts. */
+const viewWindow = (view, anchor) => {
+  if (view === 'week') return { from: startOfWeek(anchor), days: 7 };
+  // The month grid is always six Monday-first rows, so it reaches past the
+  // month on both ends and needs the whole 42-cell span covered.
+  if (view === 'month') return { from: buildMonthGrid(anchor)[0].date, days: 42 };
+  return { from: startOfDay(anchor), days: 1 };
+};
+
+/** One dot per distinct status present that day, in legend order. */
+const statusesOf = (jobs) =>
+  SCHEDULE_STATUSES.map((status) => status.id).filter((id) =>
+    jobs.some((job) => job.status === id),
+  );
+
+const emptyView = {
+  columns: [],
+  cells: [],
+  roster: [],
+  unassignedRoster: [],
+  unassignedJobs: [],
+};
+
+/**
+ * Everything the schedule screen renders for the current view and anchor:
+ * week columns, month cells, the day's dispatch roster, whoever is free that
+ * day, and the jobs in the window with nobody on them.
+ *
+ * Live mode asks the API for exactly that window — one request for a week,
+ * two for a month grid, and a second roster request on the day view. Demo mode
+ * derives the same shapes from the seeded store. `reload` re-reads after a
+ * write so the board reflects an assignment straight away.
+ */
+export const useScheduleView = ({ view, anchor }) => {
+  const live = isLiveMode();
+  const { from, days } = viewWindow(view, anchor);
+
+  // Dates are fresh objects every render; the key is what the effect watches.
+  const fromKey = toISODate(from);
+
+  const [remote, setRemote] = useState({
+    byDay: new Map(),
+    roster: [],
+    unassignedRoster: [],
+    unassignedJobs: [],
+  });
+  const [loading, setLoading] = useState(live);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    if (!live) return;
+
+    setLoading(true);
+    setError('');
+    try {
+      const [board, roster] = await Promise.all([
+        fetchScheduleWindowApi({ from, days }),
+        // Only the day view is laid out per assignee; the other views would
+        // discard the roster, so it isn't fetched for them.
+        view === 'day'
+          ? getScheduleRosterApi({ range: 'daily', date: from })
+          : Promise.resolve(null),
+      ]);
+
+      setRemote({
+        byDay: board.byDay,
+        unassignedJobs: board.unassignedJobs,
+        // The board columns are the people carrying work; everyone free that
+        // day is listed in the side panel instead, where a job is handed over.
+        roster: roster?.roster ?? [],
+        unassignedRoster: roster?.unassignedRoster ?? [],
+      });
+    } catch (err) {
+      setError(getErrorMessage(err, 'Could not load the schedule.'));
+    } finally {
+      setLoading(false);
+    }
+    // `from` is rebuilt each render, so the day it represents is the dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, view, fromKey, days]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  /* ── Demo mode ──────────────────────────────────────── */
+
+  // Demo mode reads the seeded store; live mode never touches it, so the
+  // snapshot hook is used to avoid pulling the whole job table down here.
+  const jobs = useJobsSnapshot();
+  const members = useTeamMembersSnapshot();
+  const crews = useCrewsSnapshot();
+
+  const localByDay = useMemo(() => {
+    if (live) return new Map();
+
     const buckets = new Map();
-
     jobs.forEach((job) => {
       const date = parseJobDate(job.date);
       if (!date) return;
@@ -216,89 +314,97 @@ export const useJobsByDate = () => {
       if (bucket) bucket.push(job);
       else buckets.set(key, [job]);
     });
-
     buckets.forEach((bucket) => bucket.sort(byTime));
     return buckets;
-  }, [jobs]);
-};
-
-export const useJobsOnDay = (date) => {
-  const jobsByDate = useJobsByDate();
-  const key = toISODate(date);
-  return useMemo(() => jobsByDate.get(key) ?? [], [jobsByDate, key]);
-};
-
-export const useWeekColumns = (weekStart) => {
-  const jobsByDate = useJobsByDate();
-
-  return useMemo(
-    () =>
-      buildWeekDays(weekStart).map((date) => ({
-        date,
-        iso: toISODate(date),
-        jobs: jobsByDate.get(toISODate(date)) ?? [],
-      })),
-    [jobsByDate, weekStart],
-  );
-};
-
-export const useMonthCells = (anchor) => {
-  const jobsByDate = useJobsByDate();
-
-  return useMemo(
-    () =>
-      buildMonthGrid(anchor).map(({ date, inMonth }) => {
-        const jobs = jobsByDate.get(toISODate(date)) ?? [];
-
-        /* One dot per distinct status present that day, legend-ordered. */
-        const statuses = SCHEDULE_STATUSES.map((status) => status.id).filter((id) =>
-          jobs.some((job) => job.status === id),
-        );
-
-        return { date, iso: toISODate(date), inMonth, jobs, statuses };
-      }),
-    [anchor, jobsByDate],
-  );
-};
-
-/**
- * The day view's dispatch board: everyone carrying work on `date`, technicians
- * first and then crews. Jobs name their assignee as a plain string today; that
- * becomes an id join once the backend owns the relationship.
- */
-export const useDayRoster = (date) => {
-  const jobs = useJobsOnDay(date);
-  const members = useTeamMembers();
-  const crews = useCrews();
+  }, [live, jobs]);
 
   return useMemo(() => {
-    const assigned = new Map();
+    if (live && loading && remote.byDay.size === 0) {
+      return { ...emptyView, loading: true, error, reload: load };
+    }
 
-    jobs.forEach((job) => {
-      const assignee = job.technician?.trim();
-      if (!assignee) return;
+    const byDay = live ? remote.byDay : localByDay;
+    const jobsOn = (date) => byDay.get(toISODate(date)) ?? [];
 
-      const bucket = assigned.get(assignee);
-      if (bucket) bucket.push(job);
-      else assigned.set(assignee, [job]);
-    });
+    const columns =
+      view === 'week'
+        ? buildWeekDays(startOfWeek(anchor)).map((date) => ({
+            date,
+            iso: toISODate(date),
+            jobs: jobsOn(date),
+          }))
+        : [];
 
-    const toColumn = (entity, kind) => ({
-      id: `${kind}-${entity.id}`,
-      name: entity.name,
-      kind,
-      jobs: assigned.get(entity.name) ?? [],
-    });
+    const cells =
+      view === 'month'
+        ? buildMonthGrid(anchor).map(({ date, inMonth }) => {
+            const dayJobs = jobsOn(date);
+            return {
+              date,
+              iso: toISODate(date),
+              inMonth,
+              jobs: dayJobs,
+              statuses: statusesOf(dayJobs),
+            };
+          })
+        : [];
 
-    return [
-      ...members.map((member) => toColumn(member, 'member')),
-      ...crews.map((crew) => toColumn(crew, 'crew')),
-    ].filter((column) => column.jobs.length > 0);
-  }, [crews, jobs, members]);
-};
+    let roster = [];
+    let unassignedRoster = [];
+    if (view === 'day') {
+      if (live) {
+        roster = remote.roster;
+        unassignedRoster = remote.unassignedRoster;
+      } else {
+        // The demo store names its assignee rather than referencing one, so
+        // the columns are matched back to the roster by name.
+        const dayJobs = jobsOn(anchor);
+        const assigned = new Map();
+        dayJobs.forEach((job) => {
+          const name = job.technician?.trim();
+          if (!name) return;
+          const bucket = assigned.get(name);
+          if (bucket) bucket.push(job);
+          else assigned.set(name, [job]);
+        });
 
-/** Jobs nobody is on yet — surfaced by the toolbar's unassigned button. */
-export const useUnassignedJobs = () => {
-  const jobs = useJobs();
-  return useMemo(() => jobs.filter((job) => !job.technician?.trim()), [jobs]);
+        const toColumn = (entity, kind) => ({
+          key: `${kind}-${entity.id}`,
+          kind,
+          assigneeType: kind === 'crew' ? 'crew' : 'technician',
+          assigneeId: entity.id,
+          name: entity.name,
+          role: kind === 'crew' ? 'Crew' : (entity.role ?? 'Technician'),
+          crew: kind === 'crew' ? entity.name : (entity.crew ?? 'Solo'),
+          crewColor: entity.color ?? null,
+          jobs: assigned.get(entity.name) ?? [],
+        });
+
+        const columnsForDay = [
+          ...members.map((member) => toColumn(member, 'member')),
+          ...crews.map((crew) => toColumn(crew, 'crew')),
+        ];
+
+        // Same split the API makes: on the board if they are carrying work,
+        // in the side panel if they are free.
+        roster = columnsForDay.filter((column) => column.jobs.length > 0);
+        unassignedRoster = columnsForDay.filter((column) => column.jobs.length === 0);
+      }
+    }
+
+    const unassignedJobs = live
+      ? remote.unassignedJobs
+      : jobs.filter((job) => !job.technician?.trim());
+
+    return {
+      columns,
+      cells,
+      roster,
+      unassignedRoster,
+      unassignedJobs,
+      loading,
+      error,
+      reload: load,
+    };
+  }, [live, loading, error, load, remote, localByDay, view, anchor, jobs, members, crews]);
 };

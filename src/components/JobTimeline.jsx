@@ -5,8 +5,8 @@ import { JOB_TIMELINE } from '../data/jobs';
 const stepIcons = {
   scheduled: CalendarCheck2,
   dispatched: Send,
-  enroute: MapPinned,
-  onsite: MapPinCheck,
+  'en-route': MapPinned,
+  'in-progress': MapPinCheck,
   completed: Check,
 };
 

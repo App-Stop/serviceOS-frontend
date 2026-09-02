@@ -136,7 +136,9 @@
   @apply flex flex-1 min-w-0 items-center gap-md py-2.5;
 }
 
-/* The four fixed numeric columns: unit, qty, price, total. */
+/* The four fixed columns: type, qty, price, total. ("Type" replaced the
+   prototype's free-text "unit" — it is the line's `type` enum, the only
+   per-line classifier the API stores.) */
 .invoice-doc__cell {
   @apply flex shrink-0 items-center justify-center gap-md py-2.5 w-[70px];
 }
@@ -156,7 +158,7 @@
 /* ── Summary (payment method + totals) ─────────────────── */
 
 .invoice-doc__summary {
-  @apply flex items-start justify-end gap-5 w-full px-[30px];
+  @apply flex items-start justify-end gap-5 w-full px-[30px] relative z-30;
 }
 
 .invoice-doc__method {

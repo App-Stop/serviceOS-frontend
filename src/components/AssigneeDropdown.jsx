@@ -4,10 +4,18 @@ import { useTeamMembers, useCrews, crewColor, initials } from '../data';
 import './AssigneeDropdown.css';
 
 /**
- * "Assigned To" picker: a solo/crew switch over the team roster. Jobs store
- * their assignee as a plain name, so either tab writes back a single string.
+ * "Assigned To" picker: a solo/crew switch over the team roster.
+ *
+ * `onChange` gets the plain name, which is all the demo store keeps. The API
+ * assigns by id and needs to know whether it is a technician or a crew, so
+ * `onSelectAssignee` reports `{ type, id, name }` alongside it.
  */
-export const AssigneeDropdown = ({ value, onChange, placeholder = 'Select technician' }) => {
+export const AssigneeDropdown = ({
+  value,
+  onChange,
+  onSelectAssignee,
+  placeholder = 'Select technician',
+}) => {
   const members = useTeamMembers();
   const crews = useCrews();
 
@@ -45,8 +53,9 @@ export const AssigneeDropdown = ({ value, onChange, placeholder = 'Select techni
     setOpen((wasOpen) => !wasOpen);
   };
 
-  const select = (name) => {
+  const select = (name, assignee = null) => {
     onChange(name);
+    onSelectAssignee?.(assignee);
     setOpen(false);
   };
 
@@ -99,7 +108,13 @@ export const AssigneeDropdown = ({ value, onChange, placeholder = 'Select techni
                     className={`assignee__option${
                       member.name === value ? ' assignee__option--selected' : ''
                     }`}
-                    onClick={() => select(member.name)}
+                    onClick={() =>
+                      select(member.name, {
+                        type: 'technician',
+                        id: member.id,
+                        name: member.name,
+                      })
+                    }
                   >
                     <span className="assignee__label">
                       <span className="avatar-initials assignee__avatar">
@@ -124,7 +139,9 @@ export const AssigneeDropdown = ({ value, onChange, placeholder = 'Select techni
                     className={`assignee__option${
                       crew.name === value ? ' assignee__option--selected' : ''
                     }`}
-                    onClick={() => select(crew.name)}
+                    onClick={() =>
+                      select(crew.name, { type: 'crew', id: crew.id, name: crew.name })
+                    }
                   >
                     <span className="assignee__label">
                       <span

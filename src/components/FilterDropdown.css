@@ -28,22 +28,14 @@
 
 /* ── Menu ──────────────────────────────────────────────── */
 
+/*
+ * Placement is Popover's job — this is portalled into <body>, so it carries
+ * no positioning of its own. A long list scrolls rather than running off the
+ * viewport.
+ */
 .filter-dropdown__menu {
-  @apply absolute top-full flex flex-col items-start mt-2 p-1 rounded-[24px] overflow-hidden bg-neutral-50;
-  z-index: 100 !important;
+  @apply flex flex-col items-start max-h-72 p-1 rounded-[24px] overflow-y-auto bg-neutral-50;
   box-shadow: 0 12px 40px 0 rgb(0 0 0 / 0.18);
-  right: 0;
-  left: auto;
-}
-
-.filter-dropdown__menu--left {
-  left: 0;
-  right: auto;
-}
-
-.filter-dropdown__menu--right {
-  right: 0;
-  left: auto;
 }
 
 .filter-dropdown__option {
@@ -84,10 +76,12 @@
   @apply w-full justify-between;
 }
 
-.filter-dropdown--full .filter-dropdown__menu {
-  @apply w-full min-w-full max-h-60 overflow-y-auto z-50;
+/* Width is measured off the trigger and set inline — see FilterDropdown.jsx. */
+.filter-dropdown__menu--full .filter-dropdown__option {
+  @apply w-full;
 }
 
-.filter-dropdown--full .filter-dropdown__option {
-  @apply w-full;
+/* Long customer or crew names wrap instead of being clipped by the panel. */
+.filter-dropdown__menu--full .filter-dropdown__option .filter-dropdown__label {
+  @apply whitespace-normal text-left;
 }

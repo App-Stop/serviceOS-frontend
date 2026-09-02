@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  WEEKDAY_ABBREVIATIONS,
-  formatLongDate,
-  isSameDay,
-  useMonthCells,
-} from '../../data/schedule';
+import { WEEKDAY_ABBREVIATIONS, formatLongDate, isSameDay } from '../../data/schedule';
 
 /** How many job titles the hover card lists before it stops. */
 const PREVIEW_LIMIT = 3;
@@ -12,9 +7,9 @@ const PREVIEW_LIMIT = 3;
 /**
  * Month grid. Each day shows a dot per status present and a job count;
  * hovering previews the day and selecting one opens it in the day view.
+ * `cells` is the full six-row grid, already bucketed by the schedule screen.
  */
-export const MonthView = ({ anchor, today, onSelectDay }) => {
-  const cells = useMonthCells(anchor);
+export const MonthView = ({ cells = [], today, onSelectDay }) => {
   const [previewed, setPreviewed] = useState(null);
 
   return (
@@ -68,7 +63,7 @@ export const MonthView = ({ anchor, today, onSelectDay }) => {
 
                 <ul className="schedule-month__preview-list">
                   {cell.jobs.slice(0, PREVIEW_LIMIT).map((job) => (
-                    <li key={job.id}>{job.title}</li>
+                    <li key={job.assignmentId ?? job.id}>{job.title}</li>
                   ))}
                 </ul>
 

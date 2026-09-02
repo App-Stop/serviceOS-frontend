@@ -1,9 +1,16 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { ArrowLeft, CircleCheck, Download, Pencil, Send } from 'lucide-react';
 import { AppShell } from '../components/AppShell';
 import { InvoiceDocument } from '../components/InvoiceDocument';
-import { useInvoice, statusLabel } from '../data/invoices';
+import {
+  fetchInvoice,
+  sendInvoice,
+  payInvoice,
+  downloadInvoicePdf,
+  statusLabel,
+} from '../data/invoices';
+import { getErrorMessage } from '../api/client';
 import './InvoiceDetail.css';
 
 const BackButton = () => (
@@ -17,7 +24,50 @@ const BackButton = () => (
 const InvoiceDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const invoice = useInvoice(id);
+
+  const [invoice, setInvoice] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      setInvoice(await fetchInvoice(id));
+    } catch (cause) {
+      setError(getErrorMessage(cause, 'Could not load this invoice.'));
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  /** Wraps an action so a rejection surfaces instead of silently failing. */
+  const run = async (action, fallback) => {
+    setBusy(true);
+    setError('');
+    try {
+      await action();
+      await load();
+    } catch (cause) {
+      setError(getErrorMessage(cause, fallback));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <AppShell topbarLead={<BackButton />}>
+        <div className="app-shell__content">
+          <p className="invoice-detail__loading">Loading invoice…</p>
+        </div>
+      </AppShell>
+    );
+  }
 
   if (!invoice) {
     return (
@@ -26,7 +76,7 @@ const InvoiceDetail = () => {
           <div className="invoice-detail__missing">
             <h1 className="page-title__heading">Invoice not found</h1>
             <p className="page-title__subheading">
-              This record may have been removed from the prototype store.
+              {error || 'This invoice may have been removed.'}
             </p>
             <button type="button" className="ghost-button" onClick={() => navigate('/invoices')}>
               Back to invoices
@@ -37,17 +87,67 @@ const InvoiceDetail = () => {
     );
   }
 
-  const topbarActions =
-    invoice.status === 'draft' ? (
+  const isDraft = invoice.apiStatus === 'draft';
+
+  const topbarActions = (
+    <div className="invoice-detail__actions">
+      {/* Only a draft may be edited — the API answers a PATCH to anything
+          else with a 409. */}
+      {isDraft && (
+        <button
+          type="button"
+          className="ghost-button"
+          onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
+        >
+          <Pencil size={18} strokeWidth={2} />
+          Edit Invoice
+        </button>
+      )}
+
+      {isDraft && (
+        <button
+          type="button"
+          className="ghost-button"
+          disabled={busy}
+          onClick={() => run(() => sendInvoice(invoice.id), 'Could not issue this invoice.')}
+        >
+          <Send size={18} strokeWidth={2} />
+          Send Invoice
+        </button>
+      )}
+
+      {/* Manual mark-as-paid only. No payment is collected — there is no
+          payment processing on either side yet. */}
+      {invoice.apiStatus !== 'paid' && invoice.apiStatus !== 'void' && (
+        <button
+          type="button"
+          className="ghost-button"
+          disabled={busy}
+          onClick={() =>
+            run(
+              () => payInvoice(invoice.id, invoice.method ?? undefined),
+              'Could not mark this invoice as paid.',
+            )
+          }
+        >
+          <CircleCheck size={18} strokeWidth={2} />
+          Mark as Paid
+        </button>
+      )}
+
       <button
         type="button"
         className="ghost-button"
-        onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
+        disabled={busy}
+        onClick={() =>
+          run(() => downloadInvoicePdf(invoice), 'Could not download this invoice.')
+        }
       >
-        <Pencil size={18} strokeWidth={2} />
-        Edit Invoice
+        <Download size={18} strokeWidth={2} />
+        Download PDF
       </button>
-    ) : null;
+    </div>
+  );
 
   return (
     <AppShell topbarLead={<BackButton />} topbarActions={topbarActions}>
@@ -61,6 +161,8 @@ const InvoiceDetail = () => {
             </span>
           </div>
         </div>
+
+        {error && <p className="invoice-detail__error">{error}</p>}
 
         <InvoiceDocument invoice={invoice} />
       </div>

@@ -1,32 +1,36 @@
 import React from 'react';
-import {
-  TAX_RATE,
-  invoiceTotals,
-  lineTotal,
-  formatMoney,
-  useBillTo,
-} from '../data/invoices';
+import { billToOf, formatMoney, lineTotal, paymentMethodLabel } from '../data/invoices';
 import { useIssuer, useInvoiceLayout } from '../data/profile';
 import { InvoiceMasthead } from './invoice/InvoiceMasthead';
+import { lineTypeLabel } from './invoice/LineTypeDropdown';
 import stripeLogo from '../assets/stripe.svg';
 import './InvoiceDocument.css';
-
-/** Percentage label for the tax row, e.g. "Sales Tax (6.25%)". */
-const taxLabel = `Sales Tax (${(TAX_RATE * 100).toFixed(2).replace(/\.?0+$/, '')}%)`;
 
 /**
  * The finished invoice as the customer sees it — the read-only twin of
  * `InvoiceEditor`. Paid invoices get the diagonal watermark from the design.
  *
- * The header treatment and the company details both come from the Branding
- * and Business Info settings, so changing either re-renders every invoice.
+ * Everything printed here is the invoice's own record rather than a live
+ * lookup: the recipient is the snapshot taken when it was issued, and the
+ * totals and tax rate are the server's. That is what keeps an old invoice
+ * reading correctly after the customer or the tax settings change.
+ *
+ * The one exception is the issuing company. The API doesn't put it on the
+ * invoice yet, so the "FROM" side falls back to the Branding and Business
+ * Info settings — meaning it always shows the company as it is *now*.
+ * `invoice.issuer` is preferred as soon as the field appears.
  */
 export const InvoiceDocument = ({ invoice }) => {
-  const billTo = useBillTo(invoice);
-  const issuer = useIssuer();
+  const billTo = billToOf(invoice);
+  const settingsIssuer = useIssuer();
   const layout = useInvoiceLayout();
-  const { subtotal, tax, total } = invoiceTotals(invoice.items);
+
+  const issuer = invoice.company || invoice.issuer || settingsIssuer;
+
   const paid = invoice.status === 'paid';
+  const taxLabel = invoice.taxRate
+    ? `${invoice.taxLabel ?? 'Tax'} (${Number(invoice.taxRate)}%)`
+    : invoice.taxLabel ?? 'Tax';
 
   return (
     <article className={`invoice-doc invoice-doc--${layout}`}>
@@ -56,7 +60,7 @@ export const InvoiceDocument = ({ invoice }) => {
       <div className="invoice-doc__items">
         <div className="invoice-doc__items-head">
           <span className="invoice-doc__cell--description">Description</span>
-          <span className="invoice-doc__cell">Unit</span>
+          <span className="invoice-doc__cell">Type</span>
           <span className="invoice-doc__cell">Qty</span>
           <span className="invoice-doc__cell">Price</span>
           <span className="invoice-doc__cell">Total</span>
@@ -68,7 +72,9 @@ export const InvoiceDocument = ({ invoice }) => {
               <span className="invoice-doc__text">{item.description}</span>
             </span>
             <span className="invoice-doc__cell">
-              <span className="invoice-doc__text invoice-doc__text--center">{item.unit}</span>
+              <span className="invoice-doc__text invoice-doc__text--center">
+                {lineTypeLabel(item.type)}
+              </span>
             </span>
             <span className="invoice-doc__cell">
               <span className="invoice-doc__text invoice-doc__text--center">{item.qty}</span>
@@ -91,26 +97,26 @@ export const InvoiceDocument = ({ invoice }) => {
         <div className="invoice-doc__method">
           <span className="invoice-doc__method-label">{paid ? 'Paid Via' : 'Payment Method'}</span>
           <span className="invoice-doc__method-value">
-            {invoice.method === 'Stripe' && (
+            {invoice.method === 'stripe' && (
               <img className="invoice-doc__method-logo" src={stripeLogo} alt="" />
             )}
-            {invoice.method}
+            {paymentMethodLabel(invoice.method) || '—'}
           </span>
         </div>
 
         <div className="invoice-doc__totals">
           <div className="invoice-doc__total-row">
             <span className="invoice-doc__total-label">Subtotal</span>
-            <span className="invoice-doc__total-value">{formatMoney(subtotal)}</span>
+            <span className="invoice-doc__total-value">{formatMoney(invoice.subtotal)}</span>
           </div>
           <div className="invoice-doc__total-row">
             <span className="invoice-doc__total-label">{taxLabel}</span>
-            <span className="invoice-doc__total-value">{formatMoney(tax)}</span>
+            <span className="invoice-doc__total-value">{formatMoney(invoice.tax)}</span>
           </div>
           <span className="invoice-doc__rule" />
           <div className="invoice-doc__total-row invoice-doc__total-row--grand">
             <span>Total</span>
-            <span>{formatMoney(total)}</span>
+            <span>{formatMoney(invoice.total)}</span>
           </div>
         </div>
       </div>

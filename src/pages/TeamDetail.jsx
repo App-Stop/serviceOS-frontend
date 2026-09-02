@@ -285,7 +285,7 @@ const TeamDetail = () => {
                           Scheduled
                         </span>
                       )}
-                      {job.status === 'onsite' && (
+                      {job.status === 'in-progress' && (
                         <span className="invoice-chip invoice-chip--sent">
                           In Progress
                         </span>

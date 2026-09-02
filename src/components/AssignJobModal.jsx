@@ -1,36 +1,69 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { FilterDropdown } from './FilterDropdown';
-import { useJobs, initials, setJobStatus } from '../data';
+import { useJobs, initials, fetchUnassignedDailyJobs } from '../data';
+import { getErrorMessage } from '../api/client';
 import glow from '../assets/button-glow.svg';
 import './FormModal.css';
 
-export const AssignJobModal = ({ member, onAssign, onClose }) => {
-  const jobs = useJobs();
+export const AssignJobModal = ({ member, date, onAssign, onClose }) => {
+  const allJobs = useJobs();
+  const [unassignedJobs, setUnassignedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedJobId, setSelectedJobId] = useState('');
 
-  const [selectedJobId, setSelectedJobId] = useState(
-    jobs[0]?.id ? String(jobs[0].id) : '',
-  );
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+
+    fetchUnassignedDailyJobs(date)
+      .then((rows) => {
+        if (cancelled) return;
+        setUnassignedJobs(rows);
+        if (rows.length > 0) {
+          setSelectedJobId(String(rows[0].id || rows[0].jobId));
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(getErrorMessage(err, 'Could not load unassigned jobs.'));
+          const fallback = allJobs.filter((j) => !j.technician);
+          setUnassignedJobs(fallback);
+          if (fallback.length > 0) {
+            setSelectedJobId(String(fallback[0].id));
+          }
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [date, allJobs]);
 
   const jobOptions = useMemo(
     () =>
-      jobs.map((job) => ({
-        id: String(job.id),
-        label: job.title,
+      unassignedJobs.map((job) => ({
+        id: String(job.id || job.jobId),
+        label:
+          job.customerName || job.customer
+            ? `${job.title} — ${job.customerName || job.customer}`
+            : job.title,
       })),
-    [jobs],
+    [unassignedJobs],
   );
 
-  const selectedJob = jobs.find((j) => String(j.id) === selectedJobId) || jobs[0];
+  const selectedJob = unassignedJobs.find(
+    (j) => String(j.id || j.jobId) === selectedJobId,
+  ) || unassignedJobs[0];
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!selectedJob) return;
-
-    // Assign job to member and dispatch event/callback
-    if (selectedJob.id) {
-      setJobStatus(selectedJob.id, selectedJob.status || 'scheduled');
-    }
 
     onAssign?.({
       memberId: member.id,
@@ -84,13 +117,24 @@ export const AssignJobModal = ({ member, onAssign, onClose }) => {
             <label className="text-sm font-medium text-neutral-900">
               Select Job to assign*
             </label>
-            <FilterDropdown
-              label="Select a job"
-              value={selectedJobId}
-              options={jobOptions}
-              onChange={(id) => setSelectedJobId(id)}
-              fullWidth
-            />
+
+            {loading ? (
+              <p className="text-xs text-black-200">Loading unassigned jobs…</p>
+            ) : error ? (
+              <p className="text-xs text-red-600">{error}</p>
+            ) : unassignedJobs.length === 0 ? (
+              <p className="text-xs text-black-200">
+                No unassigned jobs found for this date.
+              </p>
+            ) : (
+              <FilterDropdown
+                label="Select a job"
+                value={selectedJobId}
+                options={jobOptions}
+                onChange={(id) => setSelectedJobId(id)}
+                fullWidth
+              />
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 w-full pt-2">
@@ -100,7 +144,7 @@ export const AssignJobModal = ({ member, onAssign, onClose }) => {
             <button
               type="submit"
               className="cta-button"
-              disabled={!selectedJobId}
+              disabled={loading || !selectedJobId || unassignedJobs.length === 0}
             >
               <img className="cta-button__glow" src={glow} alt="" aria-hidden="true" />
               <span className="cta-button__label">Assign Job</span>

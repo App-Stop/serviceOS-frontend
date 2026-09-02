@@ -11,13 +11,42 @@
   @apply flex items-center gap-5;
 }
 
-/* Disabled "Create Invoice" until a customer and a line item are present. */
+/* Messages and the job-picker step share the paper's width. */
+.invoice-builder__error,
+.invoice-builder__note,
+.invoice-builder__locked,
+.invoice-builder__loading {
+  @apply w-full max-w-[540px];
+}
+
+.invoice-builder__error {
+  @apply rounded-[12px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600;
+}
+
+.invoice-builder__note,
+.invoice-builder__locked {
+  @apply rounded-[12px] border border-neutral-200 bg-neutral-100 px-4 py-2.5 text-sm font-normal text-black-200;
+}
+
+.invoice-builder__loading {
+  @apply py-10 text-center text-sm font-normal text-black-200;
+}
+
+.invoice-builder__content .job-picker {
+  @apply max-w-[540px];
+}
+
+/* Disabled "Create Invoice" until a customer and a job are selected. */
 .invoice-builder__actions .cta-button:disabled {
   @apply bg-neutral-300 border-transparent text-neutral-50 shadow-none cursor-not-allowed;
 }
 
 .invoice-builder__actions .cta-button:disabled .cta-button__glow {
   @apply hidden;
+}
+
+.invoice-builder__actions .ghost-button:disabled {
+  @apply text-neutral-300 cursor-not-allowed;
 }
 
 @media (max-width: 639px) {

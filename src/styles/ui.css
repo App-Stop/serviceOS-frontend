@@ -330,14 +330,6 @@
   @apply bg-violent-light text-violent;
 }
 
-.status-chip--enroute {
-  @apply bg-yellow-light text-yellow;
-}
-
-.status-chip--onsite {
-  @apply bg-blue-light text-blue;
-}
-
 .status-chip--completed {
   @apply bg-green-light text-green;
 }
@@ -346,25 +338,16 @@
   @apply bg-red-light text-red;
 }
 
-/*
- * The API spells three of the job statuses with a hyphen (`en-route`,
- * `on-site`, `in-progress`) where the prototype dataset ran them together, so
- * both spellings carry the same colours.
- */
 .status-chip--en-route {
   @apply bg-yellow-light text-yellow;
 }
 
-.status-chip--on-site {
+.status-chip--in-progress {
   @apply bg-blue-light text-blue;
 }
 
-.status-chip--in-progress {
-  @apply bg-cyan-light text-cyan;
-}
-
 /* Priority variants — used by the activity feed when priority changes. */
-.status-chip--urgent {
+.status-chip--emergency {
   @apply bg-error-light text-error;
 }
 
@@ -390,7 +373,7 @@
   @apply bg-neutral-200 text-black-200;
 }
 
-.priority-badge--urgent {
+.priority-badge--emergency {
   @apply bg-error-light text-error;
 }
 
@@ -538,6 +521,12 @@
 
 .invoice-chip--overdue {
   @apply bg-error-light text-error;
+}
+
+/* A voided invoice is off the books — the list hides them, but a direct link
+   to one still renders. */
+.invoice-chip--void {
+  @apply bg-neutral-200 text-neutral-400 line-through;
 }
 
 /* ── Mobile Responsive Overrides ───────────────────────── */

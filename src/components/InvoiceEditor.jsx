@@ -1,56 +1,33 @@
-import React, { useState } from 'react';
-import { Calendar, ChevronDown, ChevronUp, X } from 'lucide-react';
-import { UnitDropdown } from './UnitDropdown';
-import { useCustomers } from '../data/customers';
+import React, { useMemo } from 'react';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
 import {
-  ISSUER,
-  LINE_UNITS,
   PAYMENT_METHODS,
-  TAX_RATE,
   blankLineItem,
   formatMoney,
-  invoiceTotals,
   isBlankLineItem,
-  lineTotal,
+  todayInput,
 } from '../data/invoices';
 import { useIssuer } from '../data/profile';
 import { BrandMark } from './invoice/InvoiceMasthead';
+import { LineTypeDropdown } from './invoice/LineTypeDropdown';
+import { FilterDropdown } from './FilterDropdown';
 import './InvoiceDocument.css';
 import './InvoiceEditor.css';
 
-const taxLabel = `Sales Tax (${(TAX_RATE * 100).toFixed(2).replace(/\.?0+$/, '')}%)`;
-
-/** "Aug 13, 2026" — the date format the invoice prints. */
-const formatDate = (iso) => {
-  const date = new Date(`${iso}T00:00:00`);
-  return Number.isNaN(date.getTime())
-    ? ''
-    : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-};
-
-/** Turns "Aug 13, 2026" back into the `yyyy-mm-dd` a date input expects. */
-const toIsoDate = (label) => {
-  const date = new Date(label);
-  return Number.isNaN(date.getTime()) ? '' : date.toISOString().slice(0, 10);
-};
-
 /**
- * Underlined date line. A transparent native date input covers the row so the
- * browser's own picker does the work, while the formatted label shows through.
+ * Underlined date line. The API refuses an issue or due date in the past, so
+ * both inputs are floored at today rather than letting the request fail.
  */
-const DateField = ({ label, value, onChange }) => (
+const DateField = ({ label, value, min, onChange }) => (
   <div className="invoice-doc__field">
     <span className="invoice-doc__label">{label}</span>
     <div className="invoice-doc__line invoice-editor__date">
-      <span className="invoice-doc__line-value invoice-doc__line-value--regular">
-        {value || 'Pick a date'}
-      </span>
-      <Calendar className="invoice-doc__line-icon" size={20} strokeWidth={2} />
       <input
         type="date"
-        className="invoice-editor__date-input"
-        value={toIsoDate(value)}
-        onChange={(event) => onChange(formatDate(event.target.value))}
+        className="invoice-editor__date-native"
+        value={value ?? ''}
+        min={min}
+        onChange={(event) => onChange(event.target.value)}
         aria-label={label}
       />
     </div>
@@ -84,13 +61,34 @@ const Stepper = ({ label, onStep }) => (
  * `invoice-doc` layout as `InvoiceDocument`, with inputs in place of text and
  * a trailing blank line item that turns into a real row once it is filled in.
  *
- * `draft` is the working invoice; `onChange` receives a patch to merge.
+ * `draft` is the working invoice and `onChange` receives a patch to merge.
+ * `totals` is what to print in the summary block — the builder passes the
+ * server's own figures once an invoice exists, and a local preview before
+ * that, since the tax rate is per-invoice and set by the API.
+ *
+ * The recipient is chosen upstream in the job picker, not typed here: the API
+ * raises an invoice against a customer's jobs, and neither the customer nor
+ * the jobs can be changed after creation.
+ *
+ * The column beside the description is the line's `type` — the API's own
+ * per-line field — rather than the prototype's free-text "unit", which had
+ * nowhere to persist to and would have vanished on the next read.
  */
-export const InvoiceEditor = ({ draft, onChange }) => {
-  const customers = useCustomers();
-  const issuer = useIssuer();
-  const [suggesting, setSuggesting] = useState(false);
-  const { subtotal, tax, total } = invoiceTotals(draft.items);
+export const InvoiceEditor = ({ draft, onChange, totals, billTo }) => {
+  const settingsIssuer = useIssuer();
+  const issuer = draft?.company || draft?.issuer || settingsIssuer;
+  const today = todayInput();
+
+  const methodOptions = useMemo(
+    () => [
+      { id: '', label: 'Not specified' },
+      ...PAYMENT_METHODS.map((method) => ({
+        id: method.id,
+        label: method.label,
+      })),
+    ],
+    [],
+  );
 
   /* The last row is always empty; editing it appends the next empty row. */
   const setItem = (index, patch) => {
@@ -107,12 +105,10 @@ export const InvoiceEditor = ({ draft, onChange }) => {
     onChange({ items: last && isBlankLineItem(last) ? items : [...items, blankLineItem()] });
   };
 
-  const selected = customers.find((customer) => customer.id === draft.customerId);
-  const matches = customers
-    .filter((customer) =>
-      customer.name.toLowerCase().includes(draft.customer.trim().toLowerCase()),
-    )
-    .slice(0, 5);
+  const { subtotal, tax, total } = totals;
+  const taxLabel = draft.taxRate
+    ? `${draft.taxLabel ?? 'Tax'} (${Number(draft.taxRate)}%)`
+    : draft.taxLabel ?? 'Tax';
 
   return (
     <article className="invoice-doc">
@@ -128,8 +124,11 @@ export const InvoiceEditor = ({ draft, onChange }) => {
           </div>
 
           <div className="invoice-doc__ref">
-            <span className="invoice-doc__number">{draft.number}</span>
-            <span className="invoice-doc__ref-caption">Created: {draft.created}</span>
+            {/* Numbering is the API's — a not-yet-created invoice has none. */}
+            <span className="invoice-doc__number">{draft.number || 'New invoice'}</span>
+            {draft.created && (
+              <span className="invoice-doc__ref-caption">Created: {draft.created}</span>
+            )}
           </div>
         </header>
 
@@ -137,60 +136,26 @@ export const InvoiceEditor = ({ draft, onChange }) => {
           <div className="invoice-doc__field">
             <span className="invoice-doc__label">From</span>
             <span className="invoice-doc__line">
-              <span className="invoice-doc__line-value">{ISSUER.owner}</span>
+              <span className="invoice-doc__line-value">{issuer.name}</span>
             </span>
             <div className="invoice-doc__contact">
-              <span>{ISSUER.phone}</span>
-              <span>{ISSUER.email}</span>
-              <span>{ISSUER.location}</span>
+              <span>{issuer.contact}</span>
+              <span>{issuer.address}</span>
             </div>
           </div>
 
-          <div className="invoice-doc__field invoice-editor__bill-to">
+          <div className="invoice-doc__field">
             <span className="invoice-doc__label">Bill to</span>
             <span className="invoice-doc__line">
-              <input
-                type="text"
-                className="invoice-doc__line-value"
-                placeholder="Search or enter name..."
-                value={draft.customer}
-                onChange={(event) => {
-                  onChange({ customer: event.target.value, customerId: null });
-                  setSuggesting(true);
-                }}
-                onFocus={() => setSuggesting(true)}
-                onBlur={() => setSuggesting(false)}
-                aria-label="Bill to"
-              />
+              <span className="invoice-doc__line-value">
+                {billTo?.name || 'No customer selected'}
+              </span>
             </span>
-
-            {suggesting && matches.length > 0 && (
-              <ul className="invoice-editor__suggestions" role="listbox" aria-label="Customers">
-                {matches.map((customer) => (
-                  <li key={customer.id}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={customer.id === draft.customerId}
-                      className="invoice-editor__suggestion"
-                      /* Fires before the input's blur closes the list. */
-                      onMouseDown={() => {
-                        onChange({ customer: customer.name, customerId: customer.id });
-                        setSuggesting(false);
-                      }}
-                    >
-                      {customer.name}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {selected && (
+            {billTo && (
               <div className="invoice-doc__contact">
-                <span>{selected.phone}</span>
-                <span>{selected.email}</span>
-                <span>{selected.locations[0]}</span>
+                <span>{billTo.phone}</span>
+                <span>{billTo.email}</span>
+                <span>{billTo.location}</span>
               </div>
             )}
           </div>
@@ -199,17 +164,24 @@ export const InvoiceEditor = ({ draft, onChange }) => {
         <div className="invoice-doc__grid">
           <DateField
             label="Issue date"
-            value={draft.created}
-            onChange={(created) => onChange({ created })}
+            value={draft.issueDate}
+            min={today}
+            onChange={(issueDate) => onChange({ issueDate })}
           />
-          <DateField label="Due date" value={draft.due} onChange={(due) => onChange({ due })} />
+          <DateField
+            label="Due date"
+            value={draft.dueDate}
+            /* The API also refuses a due date before the issue date. */
+            min={draft.issueDate || today}
+            onChange={(dueDate) => onChange({ dueDate })}
+          />
         </div>
       </div>
 
       <div className="invoice-doc__items">
         <div className="invoice-doc__items-head invoice-doc__items-head--filled">
           <span className="invoice-doc__cell--description">Description</span>
-          <span className="invoice-doc__cell">Unit</span>
+          <span className="invoice-doc__cell">Type</span>
           <span className="invoice-doc__cell">Qty</span>
           <span className="invoice-doc__cell">Price</span>
           <span className="invoice-doc__cell">Total</span>
@@ -229,10 +201,12 @@ export const InvoiceEditor = ({ draft, onChange }) => {
               />
             </span>
 
-            <span className="invoice-doc__cell invoice-editor__underline flex justify-center">
-              <UnitDropdown
-                value={item.unit}
-                onChange={(unit) => setItem(index, { unit })}
+            {/* The API's only per-line classifier: 'service' for billable
+                work, 'tool' for equipment and materials. */}
+            <span className="invoice-doc__cell invoice-editor__underline">
+              <LineTypeDropdown
+                value={item.type}
+                onChange={(type) => setItem(index, { type })}
               />
             </span>
 
@@ -273,7 +247,7 @@ export const InvoiceEditor = ({ draft, onChange }) => {
 
             <span className="invoice-doc__cell invoice-editor__underline">
               <span className="invoice-doc__text invoice-doc__text--center">
-                {formatMoney(lineTotal(item))}
+                {formatMoney(Number(item.qty || 0) * Number(item.price || 0))}
               </span>
             </span>
 
@@ -296,22 +270,21 @@ export const InvoiceEditor = ({ draft, onChange }) => {
       <div className="invoice-doc__summary">
         <div className="invoice-doc__method">
           <span className="invoice-doc__method-label">Payment Method</span>
-          <div className="invoice-editor__method-select">
-            <select
-              className="invoice-editor__method-input"
-              value={draft.method}
-              onChange={(event) => onChange({ method: event.target.value })}
-              aria-label="Payment method"
-            >
-              {PAYMENT_METHODS.map((method) => (
-                <option key={method} value={method}>
-                  {method}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="invoice-editor__caret" size={20} strokeWidth={2} />
+          <div className="w-full max-w-[260px]">
+            <FilterDropdown
+              label="Not specified"
+              value={draft.method ?? ''}
+              options={methodOptions}
+              onChange={(methodId) => onChange({ method: methodId || null })}
+              fullWidth
+              align="left"
+            />
           </div>
-          <span className="invoice-doc__method-hint">QR code will appear on saved invoice</span>
+          {/* No payment is ever collected here — this only records how the
+              invoice is expected to be settled. */}
+          <span className="invoice-doc__method-hint">
+            Recorded on the invoice. No payment is taken.
+          </span>
         </div>
 
         <div className="invoice-doc__totals">

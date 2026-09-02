@@ -4,5 +4,5 @@ import { ArrowUp, Minus, TriangleAlert } from 'lucide-react';
 export const priorityIcons = {
   high: ArrowUp,
   normal: Minus,
-  urgent: TriangleAlert,
+  emergency: TriangleAlert,
 };

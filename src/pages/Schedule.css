@@ -14,6 +14,10 @@
   @apply w-full py-16 text-center text-sm text-black-200;
 }
 
+.schedule__error {
+  @apply w-full rounded-[12px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600;
+}
+
 /* ── Status palette ────────────────────────────────────── */
 
 /* Single source for the status colours; every dot and rail reads from it. */
@@ -25,11 +29,11 @@
   --schedule-status: var(--color-violent);
 }
 
-.schedule-dot--enroute {
+.schedule-dot--en-route {
   --schedule-status: var(--color-yellow);
 }
 
-.schedule-dot--onsite {
+.schedule-dot--in-progress {
   --schedule-status: var(--color-blue);
 }
 

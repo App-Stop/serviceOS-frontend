@@ -1,0 +1,44 @@
+@reference '../../index.css';
+
+/*
+ * The per-line "Type" control. Sized to sit inside a 70px line-item cell, so
+ * the trigger is bare text rather than the pill the toolbar dropdowns use.
+ */
+
+.line-type {
+  @apply inline-block;
+}
+
+.line-type__trigger {
+  @apply flex items-center justify-center gap-1 bg-transparent text-sm font-normal text-neutral-900 transition-colors;
+}
+
+.line-type__trigger:hover {
+  @apply text-black-500;
+}
+
+.line-type__caret {
+  @apply shrink-0 text-neutral-900;
+}
+
+/* Placement is Popover's job — this is portalled into <body>. */
+.line-type__menu {
+  @apply flex flex-col w-[180px] p-1 rounded-[24px] bg-neutral-50;
+  box-shadow: 0 12px 40px 0 rgb(0 0 0 / 0.18);
+}
+
+.line-type__option {
+  @apply flex items-center justify-between w-full px-[14px] py-2.5 rounded-xl text-left text-sm font-normal text-neutral-900 transition-colors;
+}
+
+.line-type__option:hover {
+  @apply bg-neutral-100;
+}
+
+.line-type__option--selected {
+  @apply rounded-[20px] bg-neutral-100;
+}
+
+.line-type__check {
+  @apply shrink-0 text-neutral-900;
+}

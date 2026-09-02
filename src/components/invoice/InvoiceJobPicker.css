@@ -1,0 +1,95 @@
+@reference '../../index.css';
+
+/*
+ * The "bill for work" step above the invoice paper. It sits on the same card
+ * surface as the document so the builder reads as one sheet of work.
+ */
+
+.job-picker {
+  @apply flex flex-col gap-lg w-full p-6 rounded-3xl bg-neutral-50 border border-neutral-200;
+}
+
+.job-picker__header {
+  @apply flex flex-col gap-1;
+}
+
+.job-picker__title {
+  @apply text-base font-semibold leading-6 text-neutral-900;
+}
+
+.job-picker__subtitle {
+  @apply text-sm font-normal leading-5 text-black-200;
+}
+
+/*
+ * Not `max-w-md`. This theme defines its own spacing scale (--spacing-sm/md/lg
+ * in index.css), and Tailwind v4 resolves `max-w-md` against it when the key
+ * exists — so `max-w-md` compiled to `max-width: 8px` and collapsed the field
+ * and its dropdown to a sliver. Named t-shirt widths are unsafe here; use an
+ * explicit value.
+ */
+.job-picker__field {
+  @apply flex flex-col gap-1.5 w-full max-w-[420px];
+}
+
+.job-picker__label {
+  @apply text-xs font-normal uppercase leading-5 text-neutral-900;
+  letter-spacing: 0.48px;
+}
+
+/* ── Job list ──────────────────────────────────────────── */
+
+.job-picker__jobs {
+  @apply flex flex-col gap-2 w-full;
+}
+
+.job-picker__job {
+  @apply flex items-center gap-3 w-full px-3 py-2.5 rounded-xl bg-white border border-neutral-200 text-left transition-colors;
+}
+
+.job-picker__job:hover {
+  @apply bg-neutral-100;
+}
+
+.job-picker__job--selected {
+  @apply border-neutral-900;
+}
+
+.job-picker__check {
+  @apply flex shrink-0 items-center justify-center w-5 h-5 rounded-md border border-neutral-300 text-white;
+}
+
+.job-picker__job--selected .job-picker__check {
+  @apply bg-neutral-900 border-neutral-900;
+}
+
+.job-picker__job-body {
+  @apply flex flex-1 min-w-0 flex-col;
+}
+
+.job-picker__job-title {
+  @apply truncate text-sm font-medium leading-5 text-neutral-900;
+}
+
+.job-picker__job-meta {
+  @apply truncate text-xs font-normal leading-5 text-black-200;
+}
+
+.job-picker__job-cost {
+  @apply shrink-0 text-sm font-medium text-neutral-900;
+}
+
+/* ── Messages ──────────────────────────────────────────── */
+
+.job-picker__hint {
+  @apply text-sm font-normal text-black-200;
+}
+
+.job-picker__error {
+  @apply w-full rounded-[12px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600;
+}
+
+/* Standing caveat, not a failure — see the note in InvoiceJobPicker.jsx. */
+.job-picker__note {
+  @apply flex items-center gap-1.5 text-xs font-normal leading-5 text-black-200;
+}

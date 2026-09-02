@@ -40,6 +40,11 @@
   @apply flex gap-4;
 }
 
+.form-modal__row > * {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
 .form-modal__hint {
   @apply text-xs font-normal text-black-200;
 }
@@ -71,13 +76,16 @@
   @apply h-4 w-4 shrink-0 cursor-pointer accent-neutral-900;
 }
 
-/**
- * A form long enough to outgrow the viewport scrolls its own body. The shell
- * keeps `overflow: visible` so dropdowns can still escape it.
- */
+/* Form body scrollable container */
 .form-modal--tall .form-modal__body {
   @apply overflow-y-auto pr-1;
   max-height: min(60vh, 520px);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.form-modal--tall .form-modal__body::-webkit-scrollbar {
+  display: none;
 }
 
 /* Only a nudge — the word count is guidance, not a hard stop. */

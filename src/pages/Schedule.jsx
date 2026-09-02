@@ -5,10 +5,12 @@ import { AssignJobModal } from '../components/AssignJobModal';
 import { ScheduleToolbar } from '../components/schedule/ScheduleToolbar';
 import { ScheduleLegend } from '../components/schedule/ScheduleLegend';
 import { UnassignedJobsPanel } from '../components/schedule/UnassignedJobsPanel';
+import { UnassignedRosterPanel } from '../components/schedule/UnassignedRosterPanel';
 import { WeekView } from '../components/schedule/WeekView';
 import { DayView } from '../components/schedule/DayView';
 import { MonthView } from '../components/schedule/MonthView';
-import { addJob, updateJob } from '../data/jobs';
+import { addJob, assignJob, updateJob } from '../data/jobs';
+import { getErrorMessage } from '../api/client';
 import {
   addDays,
   addMonths,
@@ -18,7 +20,7 @@ import {
   formatWeekTitle,
   startOfDay,
   startOfWeek,
-  useUnassignedJobs,
+  useScheduleView,
 } from '../data/schedule';
 import './Schedule.css';
 
@@ -31,7 +33,6 @@ const STEP = {
 
 const Schedule = () => {
   const today = startOfDay(new Date());
-  const unassignedJobs = useUnassignedJobs();
 
   const [view, setView] = useState('week');
   const [anchor, setAnchor] = useState(today);
@@ -40,7 +41,21 @@ const Schedule = () => {
   /* Prefill for the job modal — null while it is closed. An entry carrying an
      `id` edits that job, anything else creates a new one. */
   const [draftJob, setDraftJob] = useState(null);
+  const [savingJob, setSavingJob] = useState(false);
+  const [jobError, setJobError] = useState('');
   const [assignMember, setAssignMember] = useState(null);
+
+  /**
+   * One read for whichever window the current view is showing — the API does
+   * the day bucketing, so the board never holds more than the range it draws.
+   */
+  const { columns, cells, roster, unassignedRoster, unassignedJobs, loading, error, reload } =
+    useScheduleView({ view, anchor });
+
+  /* The day view dispatches people, so its panel lists whoever is free that
+     day; the week and month views list the jobs nobody is on. */
+  const showsRoster = view === 'day';
+  const panelCount = showsRoster ? unassignedRoster.length : unassignedJobs.length;
 
   const weekStart = startOfWeek(anchor);
 
@@ -57,26 +72,54 @@ const Schedule = () => {
     setView('day');
   };
 
-  const assignJob = (job) => {
+  /* From the jobs panel: the job is known, so the form opens on it. */
+  const openJobForAssign = (job) => {
     setPanelOpen(false);
     setDraftJob(job);
   };
 
-  const handleSaveJob = (job) => {
-    if (job.id) updateJob(job.id, job);
-    else addJob(job);
-    setDraftJob(null);
+  /* From the roster panel: the person is known, so the job picker opens. */
+  const assignToColumn = (column) => {
+    setPanelOpen(false);
+    setAssignMember(column);
   };
 
-  const handleMemberJobAssigned = ({ job }) => {
-    if (job?.id && assignMember) {
-      /* Jobs name their assignee in `technician`, crew or solo alike. */
-      updateJob(job.id, {
-        technician: assignMember.name,
-        date: formatLongDate(anchor),
-      });
+  const handleSaveJob = async (job) => {
+    setSavingJob(true);
+    setJobError('');
+    try {
+      if (job.id) await updateJob(job.id, job);
+      else await addJob(job);
+      setDraftJob(null);
+      await reload();
+    } catch (err) {
+      setJobError(getErrorMessage(err, 'Could not save this job.'));
+    } finally {
+      setSavingJob(false);
     }
+  };
+
+  /**
+   * Hands the picked job to the roster member. This only changes who is on the
+   * job — its schedule is copied from what it already has, so the window stays
+   * the single source of the job's time.
+   */
+  const handleMemberJobAssigned = async ({ job }) => {
+    const column = assignMember;
     setAssignMember(null);
+    if (!job?.id || !column) return;
+
+    setJobError('');
+    try {
+      await assignJob(job.id, {
+        assigneeType: column.assigneeType,
+        assigneeId: column.assigneeId,
+        name: column.name,
+      });
+      await reload();
+    } catch (err) {
+      setJobError(getErrorMessage(err, 'Could not assign this job.'));
+    }
   };
 
   return (
@@ -104,57 +147,69 @@ const Schedule = () => {
             className="schedule-toolbar__unassigned"
             onClick={() => setPanelOpen(true)}
           >
-            {view === 'day' ? 'Unassigned Roster' : 'Unassigned Jobs'} (
-            {unassignedJobs.length})
+            {showsRoster ? 'Unassigned Roster' : 'Unassigned Jobs'} ({panelCount})
           </button>
         </ScheduleToolbar>
 
-        {view === 'week' && (
+        {/* A failed assign closes its dialog before reporting, so the reason —
+            an unscheduled job, a double-booked technician — is shown here. */}
+        {(error || jobError) && !draftJob && (
+          <p className="schedule__error" role="alert">
+            {error || jobError}
+          </p>
+        )}
+
+        {loading && <p className="schedule-empty">Loading the schedule…</p>}
+
+        {!loading && view === 'week' && (
           <WeekView
-            weekStart={weekStart}
+            columns={columns}
             today={today}
             onCreateJob={(date) => setDraftJob({ date: formatLongDate(date) })}
           />
         )}
 
-        {view === 'day' && (
-          <DayView
-            date={anchor}
-            onAssignJob={(column) =>
-              setAssignMember({
-                id: column.id,
-                name: column.name,
-                role: column.role || (column.kind === 'crew' ? 'Crew' : 'Technician'),
-                crew: column.crew || column.name,
-              })
-            }
-          />
+        {!loading && view === 'day' && (
+          <DayView roster={roster} onAssignJob={setAssignMember} />
         )}
 
-        {view === 'month' && (
-          <MonthView anchor={anchor} today={today} onSelectDay={openDay} />
+        {!loading && view === 'month' && (
+          <MonthView cells={cells} today={today} onSelectDay={openDay} />
         )}
       </div>
 
-      {panelOpen && (
-        <UnassignedJobsPanel
-          jobs={unassignedJobs}
-          onAssign={assignJob}
-          onClose={() => setPanelOpen(false)}
-        />
-      )}
+      {panelOpen &&
+        (showsRoster ? (
+          <UnassignedRosterPanel
+            roster={unassignedRoster}
+            onAssign={assignToColumn}
+            onClose={() => setPanelOpen(false)}
+          />
+        ) : (
+          <UnassignedJobsPanel
+            jobs={unassignedJobs}
+            onAssign={openJobForAssign}
+            onClose={() => setPanelOpen(false)}
+          />
+        ))}
 
       {draftJob && (
         <JobFormModal
           job={draftJob}
+          saving={savingJob}
+          error={jobError}
           onSave={handleSaveJob}
-          onClose={() => setDraftJob(null)}
+          onClose={() => {
+            setDraftJob(null);
+            setJobError('');
+          }}
         />
       )}
 
       {assignMember && (
         <AssignJobModal
           member={assignMember}
+          date={anchor}
           onAssign={handleMemberJobAssigned}
           onClose={() => setAssignMember(null)}
         />

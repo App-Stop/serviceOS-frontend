@@ -1,16 +1,23 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { CircleCheck, Ellipsis, Pencil, Printer, Trash2 } from 'lucide-react';
+import { CircleCheck, Ellipsis, Download, Pencil, Trash2 } from 'lucide-react';
 import { Popover } from './Popover';
 import './InvoiceRowMenu.css';
 
 /**
- * The "…" row menu on the invoices table. Mark as paid is hidden once the
- * invoice is already settled, so the menu never offers a no-op.
+ * The "…" row menu on the invoices table.
+ *
+ * Which options appear is dictated by what the API will actually accept:
+ * only a `draft` may be edited or voided (anything else answers 409), and an
+ * invoice that is already paid can't be paid again. `apiStatus` is the stored
+ * status rather than the displayed one, since "overdue" is derived on the
+ * client and is really a `sent` invoice as far as the server is concerned.
  */
-export const InvoiceRowMenu = ({ invoice, onEdit, onMarkPaid, onPrint, onDelete }) => {
+export const InvoiceRowMenu = ({ invoice, onEdit, onMarkPaid, onDownload, onVoid }) => {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
   const dismiss = useCallback(() => setOpen(false), []);
+
+  const isDraft = invoice.apiStatus === 'draft';
 
   const run = (action) => {
     action?.(invoice);
@@ -33,7 +40,7 @@ export const InvoiceRowMenu = ({ invoice, onEdit, onMarkPaid, onPrint, onDelete 
       {open && (
         <Popover anchorRef={anchorRef} align="right" onDismiss={dismiss}>
           <div className="row-menu__list" role="menu">
-            {invoice.status === 'draft' && (
+            {isDraft && (
               <button
                 type="button"
                 role="menuitem"
@@ -44,7 +51,10 @@ export const InvoiceRowMenu = ({ invoice, onEdit, onMarkPaid, onPrint, onDelete 
                 Edit invoice
               </button>
             )}
-            {invoice.status !== 'paid' && (
+
+            {/* Records the invoice as settled. No payment is taken — there is
+                no payment processing behind this yet. */}
+            {invoice.apiStatus !== 'paid' && invoice.apiStatus !== 'void' && (
               <button
                 type="button"
                 role="menuitem"
@@ -55,24 +65,30 @@ export const InvoiceRowMenu = ({ invoice, onEdit, onMarkPaid, onPrint, onDelete 
                 Mark as paid
               </button>
             )}
+
             <button
               type="button"
               role="menuitem"
               className="row-menu__option"
-              onClick={() => run(onPrint)}
+              onClick={() => run(onDownload)}
             >
-              <Printer size={20} strokeWidth={2} />
-              Print Receipt
+              <Download size={20} strokeWidth={2} />
+              Download PDF
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="row-menu__option row-menu__option--danger"
-              onClick={() => run(onDelete)}
-            >
-              <Trash2 size={20} strokeWidth={2} />
-              Delete
-            </button>
+
+            {/* The API's delete is a soft void and draft-only, so an issued
+                invoice offers no way off the list. */}
+            {isDraft && (
+              <button
+                type="button"
+                role="menuitem"
+                className="row-menu__option row-menu__option--danger"
+                onClick={() => run(onVoid)}
+              >
+                <Trash2 size={20} strokeWidth={2} />
+                Void invoice
+              </button>
+            )}
           </div>
         </Popover>
       )}

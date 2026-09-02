@@ -18,6 +18,26 @@
   @apply flex items-center gap-2.5 text-sm font-medium text-neutral-900;
 }
 
+.job-detail__header-actions {
+  @apply flex items-center gap-2.5 shrink-0;
+}
+
+.job-detail__danger {
+  @apply text-error;
+}
+
+.job-detail__danger:hover {
+  @apply bg-error-light;
+}
+
+.job-detail__error {
+  @apply w-full rounded-[12px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600;
+}
+
+.job-detail__empty {
+  @apply px-5 py-6 text-center text-sm font-normal text-black-200;
+}
+
 /* ── Layout ────────────────────────────────────────────── */
 
 .job-detail__grid {

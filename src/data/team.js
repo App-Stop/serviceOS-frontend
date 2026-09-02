@@ -65,7 +65,7 @@ export const SEED_MEMBERS = [
     rating: '4.6',
     revenueGenerated: '$3,420',
     jobHistory: [
-      { id: 'jh1', title: 'Furnace Installation', status: 'onsite', statusVariant: 'info', assignee: 'Mike R.', date: 'Aug 13, 2026', time: '1:00 PM' },
+      { id: 'jh1', title: 'Furnace Installation', status: 'in-progress', statusVariant: 'info', assignee: 'Mike R.', date: 'Aug 13, 2026', time: '1:00 PM' },
       { id: 'jh2', title: 'Boiler Repair', assignee: 'John D.', date: 'Sep 02, 2026', time: '9:00 AM' },
     ],
     recentActivity: [
@@ -440,6 +440,18 @@ export const useCrews = () => {
   ensureLiveData();
   return useSyncExternalStore(subscribe, () => crews, () => crews);
 };
+
+/**
+ * The cached roster without triggering a live fetch — for a screen that has a
+ * narrower source of its own (the schedule reads its roster from
+ * `/jobs/schedule/roster`) but shares a code path with demo mode, where the
+ * seeded store is the only source there is.
+ */
+export const useTeamMembersSnapshot = () =>
+  useSyncExternalStore(subscribe, () => members, () => members);
+
+export const useCrewsSnapshot = () =>
+  useSyncExternalStore(subscribe, () => crews, () => crews);
 
 /** False until the live team has arrived; always true in demo mode. */
 export const useTeamLoaded = () =>

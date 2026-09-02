@@ -97,6 +97,10 @@
   @apply h-[72px] px-4 text-center text-sm font-normal text-black-200;
 }
 
+.jobs__error {
+  @apply w-full rounded-[12px] border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600;
+}
+
 /* Column widths — mirrors the Figma column set. */
 .jobs__col--id {
   width: 80px;
@@ -172,6 +176,14 @@
 
 .job-panel__action:hover {
   @apply bg-neutral-200;
+}
+
+.job-panel__action--danger {
+  @apply text-error;
+}
+
+.job-panel__action--danger:hover {
+  @apply bg-error-light;
 }
 
 /* Priority cell: badge on the left, row expander on the right. */
